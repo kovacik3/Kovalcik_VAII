@@ -1,0 +1,22 @@
+<%- include("partials/header", { title: title }) %>
+
+<h2>Zoznam trénerov</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Meno</th>
+      <th>Špecializácia</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% treneri.forEach(trener => { %>
+      <tr>
+        <td><%= trener.name %></td>
+        <td><%= trener.specialization %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+<%- include("partials/footer") %>

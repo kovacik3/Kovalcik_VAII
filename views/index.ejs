@@ -1,0 +1,16 @@
+<%- include("partials/header", { title: title }) %>
+
+<h2>Vitaj na rezervačnom portáli</h2>
+<p>Tu si budeš vedieť rezervovať tréningy a pozrieť dostupných trénerov.</p>
+
+<h3>Nadchádzajúce skupinové tréningy</h3>
+<ul class="list">
+  <% treningy.forEach(t => { %>
+    <li>
+      <strong><%= t.nazov %></strong> –
+      <%= t.den %> <%= t.cas %>
+    </li>
+  <% }) %>
+</ul>
+
+<%- include("partials/footer") %>

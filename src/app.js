@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const db = require("./db"); 
 
 const app = express();
 const PORT = 3000;
@@ -23,17 +24,20 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/treneri", (req, res) => {
-  const treneri = [
-    { name: "Ján Novák", specialization: "Silový tréning" },
-    { name: "Peter Horák", specialization: "Kondičný tréning" },
-    { name: "Marek Kováč", specialization: "Crossfit" },
-  ];
+app.get("/treneri", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT id, name, specialization FROM trainers"
+    );
 
-  res.render("treneri", {
-    title: "Tréneri",
-    treneri,
-  });
+    res.render("treneri", {
+      title: "Tréneri",
+      treneri: rows,
+    });
+  } catch (err) {
+    console.error("Chyba pri nacitani trenerov z DB:", err);
+    res.status(500).send("Chyba servera pri nacitani trenerov");
+  }
 });
 
 app.get("/rezervacie", (req, res) => {

@@ -1,0 +1,38 @@
+<%- include("partials/header", { title: title }) %>
+
+<h2>Nový tréner</h2>
+
+<% if (errors && errors.length > 0) { %>
+  <ul style="color: red;">
+    <% errors.forEach(e => { %>
+      <li><%= e %></li>
+    <% }) %>
+  </ul>
+<% } %>
+
+<form action="/treneri/novy" method="POST">
+  <div class="form-group">
+    <label for="name">Meno trénera</label><br>
+    <input
+      type="text"
+      id="name"
+      name="name"
+      value="<%= formData && formData.name ? formData.name : '' %>"
+    />
+  </div>
+
+  <div class="form-group">
+    <label for="specialization">Špecializácia</label><br>
+    <input
+      type="text"
+      id="specialization"
+      name="specialization"
+      value="<%= formData && formData.specialization ? formData.specialization : '' %>"
+    />
+  </div>
+
+  <button type="submit">Uložiť</button>
+  <a href="/treneri">Späť na zoznam</a>
+</form>
+
+<%- include("partials/footer") %>

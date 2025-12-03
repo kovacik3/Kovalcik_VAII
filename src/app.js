@@ -24,6 +24,16 @@ app.get("/", (req, res) => {
   });
 });
 
+// Formulár pre nového trénera
+app.get("/treneri/novy", (req, res) => {
+  res.render("treneri-new", {
+    title: "Nový tréner",
+    errors: [],
+    formData: {}
+  });
+});
+
+
 app.get("/treneri", async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -37,6 +47,40 @@ app.get("/treneri", async (req, res) => {
   } catch (err) {
     console.error("Chyba pri nacitani trenerov z DB:", err);
     res.status(500).send("Chyba servera pri nacitani trenerov");
+  }
+});
+
+// Spracovanie formulára - vytvorenie trénera
+app.post("/treneri/novy", async (req, res) => {
+  const { name, specialization } = req.body;
+
+  const errors = [];
+  if (!name || !name.trim()) {
+    errors.push("Meno je povinné");
+  }
+  if (!specialization || !specialization.trim()) {
+    errors.push("Špecializácia je povinná");
+  }
+
+  if (errors.length > 0) {
+    return res.render("treneri-novy", {
+      title: "Nový tréner",
+      errors,
+      formData: { name, specialization }
+    });
+  }
+
+  try {
+    await db.query(
+      "INSERT INTO trainers (name, specialization) VALUES (?, ?)",
+      [name.trim(), specialization.trim()]
+    );
+
+    // po úspešnom uložení presmeruj na zoznam trénerov
+    res.redirect("/treneri");
+  } catch (err) {
+    console.error("Chyba pri ukladani trenera:", err);
+    res.status(500).send("Chyba servera pri vytvarani trenera");
   }
 });
 

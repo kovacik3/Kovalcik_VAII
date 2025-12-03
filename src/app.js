@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 });
 
 // Formulár pre nového trénera
-app.get("/treneri/novy", (req, res) => {
+app.get("/treneri/new", (req, res) => {
   res.render("treneri-new", {
     title: "Nový tréner",
     errors: [],
@@ -50,8 +50,36 @@ app.get("/treneri", async (req, res) => {
   }
 });
 
-// Spracovanie formulára - vytvorenie trénera
-app.post("/treneri/novy", async (req, res) => {
+// Formulár na úpravu trénera
+app.get("/treneri/:id/edit", async (req, res) => {
+  const trainerId = req.params.id;
+
+  try {
+    const [rows] = await db.query(
+      "SELECT id, name, specialization FROM trainers WHERE id = ?",
+      [trainerId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).send("Tréner nenájdený");
+    }
+
+    const trainer = rows[0];
+
+    res.render("treneri-edit", {
+      title: "Upraviť trénera",
+      trainer,
+      errors: []
+    });
+  } catch (err) {
+    console.error("Chyba pri nacitani trenera:", err);
+    res.status(500).send("Chyba servera pri nacitani trenera");
+  }
+});
+
+// Spracovanie úpravy trénera
+app.post("/treneri/:id/edit", async (req, res) => {
+  const trainerId = req.params.id;
   const { name, specialization } = req.body;
 
   const errors = [];
@@ -63,7 +91,42 @@ app.post("/treneri/novy", async (req, res) => {
   }
 
   if (errors.length > 0) {
-    return res.render("treneri-novy", {
+    // znovu načítame trénera pre zobrazenie formulara
+    return res.render("treneri-edit", {
+      title: "Upraviť trénera",
+      trainer: { id: trainerId, name, specialization },
+      errors
+    });
+  }
+
+  try {
+    await db.query(
+      "UPDATE trainers SET name = ?, specialization = ? WHERE id = ?",
+      [name.trim(), specialization.trim(), trainerId]
+    );
+
+    res.redirect("/treneri");
+  } catch (err) {
+    console.error("Chyba pri uprave trenera:", err);
+    res.status(500).send("Chyba servera pri uprave trenera");
+  }
+}); 
+
+
+// Spracovanie formulára - vytvorenie trénera
+app.post("/treneri/new", async (req, res) => {
+  const { name, specialization } = req.body;
+
+  const errors = [];
+  if (!name || !name.trim()) {
+    errors.push("Meno je povinné");
+  }
+  if (!specialization || !specialization.trim()) {
+    errors.push("Špecializácia je povinná");
+  }
+
+  if (errors.length > 0) {
+    return res.render("treneri-new", {
       title: "Nový tréner",
       errors,
       formData: { name, specialization }
@@ -81,6 +144,108 @@ app.post("/treneri/novy", async (req, res) => {
   } catch (err) {
     console.error("Chyba pri ukladani trenera:", err);
     res.status(500).send("Chyba servera pri vytvarani trenera");
+  }
+});
+
+app.post("/treneri/:id/delete", async (req, res) => {
+  const trainerId = req.params.id;
+
+  try {
+    await db.query("DELETE FROM trainers WHERE id = ?", [trainerId]);
+    res.redirect("/treneri");
+  } catch (err) {
+    console.error("Chyba pri mazani trenera:", err);
+    res.status(500).send("Chyba servera pri mazani trenera");
+  }
+});
+
+app.get("/sessions/new", (req, res) => {
+  res.render("sessions-new", {
+    title: "Nový tréning",
+    errors: [],
+    formData: {}
+  });
+});
+app.post("/sessions/new", async (req, res) => {
+  const { title, start_at, end_at, capacity, trainer_id } = req.body;
+
+  const errors = [];
+
+  if (!title || !title.trim()) {
+    errors.push("Názov je povinný");
+  }
+  if (!start_at) {
+    errors.push("Začiatok je povinný");
+  }
+  if (!end_at) {
+    errors.push("Koniec je povinný");
+  }
+  if (!capacity || isNaN(capacity) || Number(capacity) <= 0) {
+    errors.push("Kapacita musí byť kladné číslo");
+  }
+
+  // jednoduchý check: začiatok pred koncom (ak sú obe zadané)
+  if (start_at && end_at && start_at >= end_at) {
+    errors.push("Začiatok musí byť pred koncom");
+  }
+
+  const formData = { title, start_at, end_at, capacity, trainer_id };
+
+  if (errors.length > 0) {
+    return res.render("sessions-new", {
+      title: "Nový tréning",
+      errors,
+      formData
+    });
+  }
+
+  // pre MySQL: datetime-local je vo formáte "YYYY-MM-DDTHH:MM"
+  const startForDb = start_at.replace("T", " ") + ":00";
+  const endForDb = end_at.replace("T", " ") + ":00";
+
+  try {
+    await db.query(
+      `INSERT INTO sessions (title, start_at, end_at, capacity, trainer_id)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        title.trim(),
+        startForDb,
+        endForDb,
+        Number(capacity),
+        trainer_id ? Number(trainer_id) : null
+      ]
+    );
+
+    res.redirect("/sessions");
+  } catch (err) {
+    console.error("Chyba pri vytvarani session:", err);
+    res.status(500).send("Chyba servera pri vytvarani treningu");
+  }
+});
+
+
+app.get("/sessions", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT 
+         s.id,
+         s.title,
+         s.start_at,
+         s.end_at,
+         s.capacity,
+         t.name AS trainer_name
+       FROM sessions s
+       LEFT JOIN trainers t ON s.trainer_id = t.id
+       ORDER BY s.start_at`
+    );
+
+    res.render("sessions", {
+      title: "Tréningy",
+      sessions: rows,
+    });
+  } catch (err) {
+    console.error("Chyba pri nacitani sessions:", err);
+    res.status(500).send("Chyba servera pri nacitani treningov");
   }
 });
 

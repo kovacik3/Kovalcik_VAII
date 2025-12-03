@@ -1,6 +1,6 @@
 <%- include("partials/header", { title: title }) %>
 
-<h2>Nový tréner</h2>
+<h2>Upraviť trénera</h2>
 
 <% if (errors && errors.length > 0) { %>
   <ul style="color: red;">
@@ -10,14 +10,14 @@
   </ul>
 <% } %>
 
-<form action="/treneri/new" method="POST">
+<form action="/treneri/<%= trainer.id %>/edit" method="POST">
   <div class="form-group">
     <label for="name">Meno trénera</label><br>
     <input
       type="text"
       id="name"
       name="name"
-      value="<%= formData && formData.name ? formData.name : '' %>"
+      value="<%= trainer.name %>"
     />
   </div>
 
@@ -27,11 +27,11 @@
       type="text"
       id="specialization"
       name="specialization"
-      value="<%= formData && formData.specialization ? formData.specialization : '' %>"
+      value="<%= trainer.specialization %>"
     />
   </div>
 
-  <button type="submit">Uložiť</button>
+  <button type="submit">Uložiť zmeny</button>
   <a href="/treneri">Späť na zoznam</a>
 </form>
 

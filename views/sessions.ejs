@@ -1,0 +1,32 @@
+<%- include("partials/header", { title: title }) %>
+
+<h2>Tréningy (sessions)</h2>
+
+<p>
+  <a href="/sessions/new">Pridať tréning</a>
+</p>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Názov</th>
+      <th>Začiatok</th>
+      <th>Koniec</th>
+      <th>Kapacita</th>
+      <th>Tréner</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% sessions.forEach(s => { %>
+      <tr>
+        <td><%= s.title %></td>
+        <td><%= s.start_at.toLocaleString("sk-SK") %></td>
+        <td><%= s.end_at.toLocaleString("sk-SK") %></td>
+        <td><%= s.capacity %></td>
+        <td><%= s.trainer_name || "—" %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+<%- include("partials/footer") %>

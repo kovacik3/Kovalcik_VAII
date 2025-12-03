@@ -11,6 +11,7 @@
     <tr>
       <th>Meno</th>
       <th>Špecializácia</th>
+      <th>Akcie</th> <!-- nový stĺpec -->
     </tr>
   </thead>
   <tbody>
@@ -18,6 +19,16 @@
       <tr>
         <td><%= trener.name %></td>
         <td><%= trener.specialization %></td>
+        <td>
+        <a href="/treneri/<%= trener.id %>/edit">Upraviť</a>
+  |
+        <form action="/treneri/<%= trener.id %>/delete" method="POST" style="display:inline;">
+          <button type="submit" onclick="return confirm('Naozaj zmazať tohto trénera?');">
+             Zmazať
+          </button>
+        </form>
+      </td>
+
       </tr>
     <% }) %>
   </tbody>

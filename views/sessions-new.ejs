@@ -1,0 +1,71 @@
+<%- include("partials/header", { title: title }) %>
+
+<h2>Nový tréning (session)</h2>
+
+<% if (errors && errors.length > 0) { %>
+  <ul style="color: red;">
+    <% errors.forEach(e => { %>
+      <li><%= e %></li>
+    <% }) %>
+  </ul>
+<% } %>
+
+<form action="/sessions/new" method="POST">
+  <div class="form-group">
+    <label for="title">Názov tréningu</label><br>
+    <input
+      type="text"
+      id="title"
+      name="title"
+      value="<%= formData && formData.title ? formData.title : '' %>"
+    />
+  </div>
+
+  <div class="form-group">
+    <label for="start_at">Začiatok</label><br>
+    <input
+      type="datetime-local"
+      id="start_at"
+      name="start_at"
+      value="<%= formData && formData.start_at ? formData.start_at : '' %>"
+    />
+  </div>
+
+  <div class="form-group">
+    <label for="end_at">Koniec</label><br>
+    <input
+      type="datetime-local"
+      id="end_at"
+      name="end_at"
+      value="<%= formData && formData.end_at ? formData.end_at : '' %>"
+    />
+  </div>
+
+  <div class="form-group">
+    <label for="capacity">Kapacita</label><br>
+    <input
+      type="number"
+      id="capacity"
+      name="capacity"
+      min="1"
+      value="<%= formData && formData.capacity ? formData.capacity : '' %>"
+    />
+  </div>
+
+  <div class="form-group">
+    <label for="trainer_id">Tréner (ID)</label><br>
+    <input
+      type="number"
+      id="trainer_id"
+      name="trainer_id"
+      min="1"
+      value="<%= formData && formData.trainer_id ? formData.trainer_id : '' %>"
+    />
+    <p>Dočasne sem píš ID trénera (vidíš ho v zozname trénerov / v DB).</p>
+  </div>
+
+  <button type="submit">Uložiť tréning</button>
+  <a href="/sessions">Späť na zoznam</a>
+</form>
+
+<%- include("partials/footer") %>

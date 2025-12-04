@@ -223,6 +223,107 @@ app.post("/sessions/new", async (req, res) => {
   }
 });
 
+app.get("/sessions/:id/edit", async (req, res) => {
+  const sessionId = req.params.id;
+
+  try {
+    const [rows] = await db.query(
+      "SELECT id, title, start_at, end_at, capacity, trainer_id FROM sessions WHERE id = ?",
+      [sessionId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).send("Tréning nenájdený");
+    }
+
+    const session = rows[0];
+
+    res.render("sessions-edit", {
+      title: "Upraviť tréning",
+      session,
+      errors: []
+    });
+  } catch (err) {
+    console.error("Chyba pri nacitani session:", err);
+    res.status(500).send("Chyba servera pri nacitani treningu");
+  }
+});
+
+app.post("/sessions/:id/edit", async (req, res) => {
+  const sessionId = req.params.id;
+  const { title, start_at, end_at, capacity, trainer_id } = req.body;
+
+  const errors = [];
+
+  if (!title || !title.trim()) {
+    errors.push("Názov je povinný");
+  }
+  if (!start_at) {
+    errors.push("Začiatok je povinný");
+  }
+  if (!end_at) {
+    errors.push("Koniec je povinný");
+  }
+  if (!capacity || isNaN(capacity) || Number(capacity) <= 0) {
+    errors.push("Kapacita musí byť kladné číslo");
+  }
+  if (start_at && end_at && start_at >= end_at) {
+    errors.push("Začiatok musí byť pred koncom");
+  }
+
+  // ak sú chyby, vrátime formulár s pôvodnými dátami
+  if (errors.length > 0) {
+    return res.render("sessions-edit", {
+      title: "Upraviť tréning",
+      session: {
+        id: sessionId,
+        title,
+        // späť do datetime-local formátu
+        start_at: start_at ? new Date(start_at) : null,
+        end_at: end_at ? new Date(end_at) : null,
+        capacity,
+        trainer_id
+      },
+      errors
+    });
+  }
+
+  const startForDb = start_at.replace("T", " ") + ":00";
+  const endForDb = end_at.replace("T", " ") + ":00";
+
+  try {
+    await db.query(
+      `UPDATE sessions
+       SET title = ?, start_at = ?, end_at = ?, capacity = ?, trainer_id = ?
+       WHERE id = ?`,
+      [
+        title.trim(),
+        startForDb,
+        endForDb,
+        Number(capacity),
+        trainer_id ? Number(trainer_id) : null,
+        sessionId
+      ]
+    );
+
+    res.redirect("/sessions");
+  } catch (err) {
+    console.error("Chyba pri uprave session:", err);
+    res.status(500).send("Chyba servera pri uprave treningu");
+  }
+});
+
+app.post("/sessions/:id/delete", async (req, res) => {
+  const sessionId = req.params.id;
+
+  try {
+    await db.query("DELETE FROM sessions WHERE id = ?", [sessionId]);
+    res.redirect("/sessions");
+  } catch (err) {
+    console.error("Chyba pri mazani session:", err);
+    res.status(500).send("Chyba servera pri mazani treningu");
+  }
+});
 
 app.get("/sessions", async (req, res) => {
   try {

@@ -14,6 +14,7 @@
       <th>Koniec</th>
       <th>Kapacita</th>
       <th>Tréner</th>
+      <th>Akcie</th> <!-- nový stĺpec -->
     </tr>
   </thead>
   <tbody>
@@ -24,6 +25,15 @@
         <td><%= s.end_at.toLocaleString("sk-SK") %></td>
         <td><%= s.capacity %></td>
         <td><%= s.trainer_name || "—" %></td>
+        <td>
+          <a href="/sessions/<%= s.id %>/edit">Upraviť</a>
+          |
+          <form action="/sessions/<%= s.id %>/delete" method="POST" style="display:inline;">
+            <button type="submit" onclick="return confirm('Naozaj zmazať tento tréning?');">
+              Zmazať
+            </button>
+          </form>
+        </td>
       </tr>
     <% }) %>
   </tbody>

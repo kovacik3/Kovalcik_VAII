@@ -5,17 +5,41 @@
 <table class="table">
   <thead>
     <tr>
-      <th>Udalosť</th>
-      <th>Dátum</th>
-      <th>Čas</th>
+      <th>Tréning</th>
+      <th>Začiatok</th>
+      <th>Meno klienta</th>
+      <th>Poznámka</th>
+      <th>Vytvorené</th>
+      <th>Akcie</th>
     </tr>
   </thead>
   <tbody>
     <% rezervacie.forEach(r => { %>
       <tr>
-        <td><%= r.event %></td>
-        <td><%= r.date %></td>
-        <td><%= r.time %></td>
+        <td><%= r.session_title %></td>
+        <td>
+          <% if (r.session_start) { %>
+            <%= r.session_start.toLocaleString("sk-SK") %>
+          <% } else { %>
+            —
+          <% } %>
+        </td>
+        <td><%= r.client_name %></td>
+        <td><%= r.note || "—" %></td>
+        <td>
+          <% if (r.created_at) { %>
+            <%= r.created_at.toLocaleString("sk-SK") %>
+          <% } else { %>
+            —
+          <% } %>
+        </td>
+        <td>
+          <form action="/rezervacie/<%= r.id %>/delete" method="POST" style="display:inline;">
+            <button type="submit" onclick="return confirm('Naozaj zmazať túto rezerváciu?');">
+              Zmazať
+            </button>
+          </form>
+        </td>
       </tr>
     <% }) %>
   </tbody>

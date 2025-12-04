@@ -14,15 +14,27 @@
       <th>Koniec</th>
       <th>Kapacita</th>
       <th>Tréner</th>
-      <th>Akcie</th> <!-- nový stĺpec -->
+      <th>Akcie</th>
     </tr>
   </thead>
   <tbody>
     <% sessions.forEach(s => { %>
       <tr>
         <td><%= s.title %></td>
-        <td><%= s.start_at.toLocaleString("sk-SK") %></td>
-        <td><%= s.end_at.toLocaleString("sk-SK") %></td>
+        <td>
+          <% if (s.start_at) { %>
+            <%= s.start_at.toLocaleString("sk-SK") %>
+          <% } else { %>
+            —
+          <% } %>
+        </td>
+        <td>
+          <% if (s.end_at) { %>
+            <%= s.end_at.toLocaleString("sk-SK") %>
+          <% } else { %>
+            —
+          <% } %>
+        </td>
         <td><%= s.capacity %></td>
         <td><%= s.trainer_name || "—" %></td>
         <td>
@@ -33,6 +45,8 @@
               Zmazať
             </button>
           </form>
+          |
+          <a href="/rezervacie/new?sessionId=<%= s.id %>">Rezervovať</a>
         </td>
       </tr>
     <% }) %>

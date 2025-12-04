@@ -325,6 +325,37 @@ app.post("/sessions/:id/delete", async (req, res) => {
   }
 });
 
+app.get("/rezervacie/new", async (req, res) => {
+  const sessionId = req.query.sessionId;
+
+  if (!sessionId) {
+    return res.status(400).send("Chýba sessionId");
+  }
+
+  try {
+    const [rows] = await db.query(
+      "SELECT id, title, start_at FROM sessions WHERE id = ?",
+      [sessionId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).send("Tréning nenájdený");
+    }
+
+    const session = rows[0];
+
+    res.render("rezervacie-new", {
+      title: "Nová rezervácia",
+      session,
+      errors: [],
+      formData: { client_name: "", note: "" }
+    });
+  } catch (err) {
+    console.error("Chyba pri nacitani session pre rezervaciu:", err);
+    res.status(500).send("Chyba servera pri priprave rezervacie");
+  }
+});
+
 app.get("/sessions", async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -350,17 +381,94 @@ app.get("/sessions", async (req, res) => {
   }
 });
 
-app.get("/rezervacie", (req, res) => {
-  const rezervacie = [
-    { event: "Skupinový tréning", date: "2025-01-10", time: "18:00" },
-    { event: "Individuálny tréning", date: "2025-01-12", time: "16:30" },
-  ];
+app.post("/rezervacie/new", async (req, res) => {
+  const { session_id, client_name, note } = req.body;
 
-  res.render("rezervacie", {
-    title: "Moje rezervácie",
-    rezervacie,
-  });
+  const errors = [];
+  if (!session_id) {
+    errors.push("Chýba tréning (session_id).");
+  }
+  if (!client_name || !client_name.trim()) {
+    errors.push("Meno klienta je povinné.");
+  }
+
+  let session = null;
+
+  try {
+    // vždy načítame session, aby sme ju vedeli zobraziť vo formulári
+    const [rows] = await db.query(
+      "SELECT id, title, start_at FROM sessions WHERE id = ?",
+      [session_id]
+    );
+
+    if (rows.length === 0) {
+      errors.push("Zvolený tréning neexistuje.");
+    } else {
+      session = rows[0];
+    }
+
+    if (errors.length > 0) {
+      return res.render("rezervacie-new", {
+        title: "Nová rezervácia",
+        session,
+        errors,
+        formData: { client_name, note }
+      });
+    }
+
+    await db.query(
+      "INSERT INTO reservations (session_id, client_name, note) VALUES (?, ?, ?)",
+      [
+        Number(session_id),
+        client_name.trim(),
+        note && note.trim() ? note.trim() : null
+      ]
+    );
+
+    res.redirect("/rezervacie");
+  } catch (err) {
+    console.error("Chyba pri vytvarani rezervacie:", err);
+    res.status(500).send("Chyba servera pri vytvarani rezervacie");
+  }
 });
+
+app.get("/rezervacie", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT 
+         r.id,
+         r.client_name,
+         r.note,
+         r.created_at,
+         s.title AS session_title,
+         s.start_at AS session_start
+       FROM reservations r
+       JOIN sessions s ON r.session_id = s.id
+       ORDER BY r.created_at DESC`
+    );
+
+    res.render("rezervacie", {
+      title: "Moje rezervácie",
+      rezervacie: rows,
+    });
+  } catch (err) {
+    console.error("Chyba pri nacitani rezervacii:", err);
+    res.status(500).send("Chyba servera pri nacitani rezervacii");
+  }
+});
+
+app.post("/rezervacie/:id/delete", async (req, res) => {
+  const reservationId = req.params.id;
+
+  try {
+    await db.query("DELETE FROM reservations WHERE id = ?", [reservationId]);
+    res.redirect("/rezervacie");
+  } catch (err) {
+    console.error("Chyba pri mazani rezervacie:", err);
+    res.status(500).send("Chyba servera pri mazani rezervacie");
+  }
+});
+
 
 app.listen(PORT, () => {
   console.log(`Server beží na http://localhost:${PORT}`);

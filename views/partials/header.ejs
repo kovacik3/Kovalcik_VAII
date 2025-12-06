@@ -4,20 +4,28 @@
   <meta charset="UTF-8" />
   <title><%= title %> | Gym Rezervácie</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Bootstrap 5 CSS z CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Váš vlastný CSS (neskôr) -->
   <link rel="stylesheet" href="/css/styles.css" />
 </head>
-<body>
-  <header class="header">
-    <div class="container header-inner">
-      <h1 class="logo">Rezervačný portál posilňovne</h1>
-      <nav class="nav">
-        <a href="/">Domov</a>
-        <a href="/treneri">Tréneri</a>
-        <a href="/treningy">Tréningy</a>
-        <a href="/rezervacie">Moje rezervácie</a>
-      </nav>
+<body class="d-flex flex-column" style="min-height: 100vh;">
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">💪 Gym Rezervácie</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="/">Domov</a></li>
+          <li class="nav-item"><a class="nav-link" href="/treneri">Tréneri</a></li>
+          <li class="nav-item"><a class="nav-link" href="/treningy">Tréningy</a></li>
+          <li class="nav-item"><a class="nav-link" href="/rezervacie">Moje rezervácie</a></li>
+        </ul>
+      </div>
     </div>
-  </header>
+  </nav>
 
-  <main class="main">
-    <div class="container">
+  <main class="flex-grow-1">
+    <div class="container mt-4">

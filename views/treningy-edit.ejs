@@ -10,14 +10,14 @@
   </ul>
 <% } %>
 
-<form action="/sessions/<%= session.id %>/edit" method="POST">
+<form action="/treningy/<%= trening.id %>/edit" method="POST">
   <div class="form-group">
     <label for="title">Názov tréningu</label><br>
     <input
       type="text"
       id="title"
       name="title"
-      value="<%= session.title %>"
+      value="<%= trening.title %>"
     />
   </div>
 
@@ -27,7 +27,7 @@
       type="datetime-local"
       id="start_at"
       name="start_at"
-      value="<%= session.start_at ? session.start_at.toISOString().slice(0,16) : '' %>"
+      value="<%= trening.start_at ? trening.start_at.toISOString().slice(0,16) : '' %>"
     />
   </div>
 
@@ -37,7 +37,7 @@
       type="datetime-local"
       id="end_at"
       name="end_at"
-      value="<%= session.end_at ? session.end_at.toISOString().slice(0,16) : '' %>"
+      value="<%= trening.end_at ? trening.end_at.toISOString().slice(0,16) : '' %>"
     />
   </div>
 
@@ -48,7 +48,7 @@
       id="capacity"
       name="capacity"
       min="1"
-      value="<%= session.capacity %>"
+      value="<%= trening.capacity %>"
     />
   </div>
 
@@ -59,12 +59,12 @@
       id="trainer_id"
       name="trainer_id"
       min="1"
-      value="<%= session.trainer_id || '' %>"
+      value="<%= trening.trainer_id || '' %>"
     />
   </div>
 
   <button type="submit">Uložiť zmeny</button>
-  <a href="/sessions">Späť na zoznam</a>
+  <a href="/treningy">Späť na zoznam</a>
 </form>
 
 <%- include("partials/footer") %>

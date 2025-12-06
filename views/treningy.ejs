@@ -3,7 +3,7 @@
 <h2>Tréningy (sessions)</h2>
 
 <p>
-  <a href="/sessions/new">Pridať tréning</a>
+  <a href="/treningy/new">Pridať tréning</a>
 </p>
 
 <table class="table">
@@ -18,7 +18,7 @@
     </tr>
   </thead>
   <tbody>
-    <% sessions.forEach(s => { %>
+    <% treningy.forEach(s => { %>
       <tr>
         <td><%= s.title %></td>
         <td>
@@ -38,15 +38,15 @@
         <td><%= s.capacity %></td>
         <td><%= s.trainer_name || "—" %></td>
         <td>
-          <a href="/sessions/<%= s.id %>/edit">Upraviť</a>
+          <a href="/treningy/<%= s.id %>/edit">Upraviť</a>
           |
-          <form action="/sessions/<%= s.id %>/delete" method="POST" style="display:inline;">
+          <form action="/treningy/<%= s.id %>/delete" method="POST" style="display:inline;">
             <button type="submit" onclick="return confirm('Naozaj zmazať tento tréning?');">
               Zmazať
             </button>
           </form>
           |
-          <a href="/rezervacie/new?sessionId=<%= s.id %>">Rezervovať</a>
+          <a href="/rezervacie/new?treningId=<%= s.id %>">Rezervovať</a>
         </td>
       </tr>
     <% }) %>

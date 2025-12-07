@@ -30,20 +30,32 @@ app.use(express.urlencoded({ extended: true }));
  * GET /
  * Zobrazí domovskú stránku s nadchádzajúcimi tréningami
  */
-app.get("/", (req, res) => {
-  // Dočasný zoznam nadchádzajúcich tréningov (neskôr sa budú načítavať z DB)
-  const nadchadzajuceTreningy = [
-    { nazov: "Silový tréning", den: "Pondelok", cas: "18:00" },
-    { nazov: "HIIT tréning", den: "Streda", cas: "19:00" },
-    { nazov: "Full body", den: "Piatok", cas: "17:00" },
-  ];
+app.get("/", async (req, res) => {
+  try {
+    // Načítaj nadchádzajúce tréningy z databázy
+    const [rows] = await db.query(
+      `SELECT 
+         s.id,
+         s.title as nazov,
+         DATE_FORMAT(s.start_at, '%W') as den,
+         DATE_FORMAT(s.start_at, '%H:%i') as cas
+       FROM sessions s
+       WHERE s.start_at > NOW()
+       ORDER BY s.start_at
+       LIMIT 3`
+    );
 
-  res.render("index", {
-    title: "Domov",
-    treningy: nadchadzajuceTreningy,
-  });
-
-  
+    res.render("index", {
+      title: "Domov",
+      treningy: rows,
+    });
+  } catch (err) {
+    console.error("Chyba pri nacitani nadchadzajucich treningov:", err);
+    res.render("index", {
+      title: "Domov",
+      treningy: [],
+    });
+  }
 });
 
 

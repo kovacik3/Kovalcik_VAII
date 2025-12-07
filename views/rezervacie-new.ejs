@@ -1,45 +1,67 @@
 <%- include("partials/header", { title: title }) %>
 
-<h2>Nová rezervácia</h2>
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-6">
+      <h1 class="mb-4">Nová rezervácia</h1>
 
-<p>
-  Tréning: <strong><%= session.title %></strong><br>
-  Začiatok: <%= session.start_at.toLocaleString("sk-SK") %>
-</p>
+      <div class="card mb-4 bg-light">
+        <div class="card-body">
+          <p class="card-text mb-1">
+            <strong>Tréning:</strong> <%= session.title %>
+          </p>
+          <p class="card-text">
+            <strong>Začiatok:</strong> <%= session.start_at.toLocaleString("sk-SK") %>
+          </p>
+        </div>
+      </div>
 
-<% if (errors && errors.length > 0) { %>
-  <ul style="color: red;">
-    <% errors.forEach(e => { %>
-      <li><%= e %></li>
-    <% }) %>
-  </ul>
-<% } %>
+      <% if (errors && errors.length > 0) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <strong>Chyby pri validácii:</strong>
+          <ul class="mb-0 mt-2">
+            <% errors.forEach(e => { %>
+              <li><%= e %></li>
+            <% }) %>
+          </ul>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% } %>
 
-<form action="/rezervacie/new" method="POST">
-  <input type="hidden" name="session_id" value="<%= session.id %>" />
+      <form action="/rezervacie/new" method="POST">
+        <input type="hidden" name="session_id" value="<%= session.id %>" />
 
-  <div class="form-group">
-    <label for="client_name">Meno klienta</label><br>
-    <input
-      type="text"
-      id="client_name"
-      name="client_name"
-      value="<%= formData.client_name %>"
-    />
+        <div class="mb-3">
+          <label for="client_name" class="form-label">Meno klienta</label>
+          <input
+            type="text"
+            class="form-control"
+            id="client_name"
+            name="client_name"
+            value="<%= formData.client_name %>"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="note" class="form-label">Poznámka (nepovinné)</label>
+          <input
+            type="text"
+            class="form-control"
+            id="note"
+            name="note"
+            value="<%= formData.note %>"
+            placeholder="Napr. potrebujem pomoc pri cvičení..."
+          />
+        </div>
+
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-start">
+          <button type="submit" class="btn btn-success">📅 Potvrdiť rezerváciu</button>
+          <a href="/treningy" class="btn btn-secondary">❌ Zrušiť</a>
+        </div>
+      </form>
+    </div>
   </div>
-
-  <div class="form-group">
-    <label for="note">Poznámka (nepovinné)</label><br>
-    <input
-      type="text"
-      id="note"
-      name="note"
-      value="<%= formData.note %>"
-    />
-  </div>
-
-  <button type="submit">Odoslať rezerváciu</button>
-  <a href="/treningy">Späť na tréningy</a>
-</form>
+</div>
 
 <%- include("partials/footer") %>

@@ -1,56 +1,71 @@
 <%- include("partials/header", { title: title }) %>
 
-<h2>Tréningy (sessions)</h2>
+<div class="container my-5">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1 class="mb-4">Tréningy (sessions)</h1>
+      <a href="/treningy/new" class="btn btn-success">➕ Pridať tréning</a>
+    </div>
+  </div>
 
-<p>
-  <a href="/treningy/new">Pridať tréning</a>
-</p>
-
-<table class="table">
-  <thead>
-    <tr>
-      <th>Názov</th>
-      <th>Začiatok</th>
-      <th>Koniec</th>
-      <th>Kapacita</th>
-      <th>Tréner</th>
-      <th>Akcie</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% treningy.forEach(s => { %>
-      <tr>
-        <td><%= s.title %></td>
-        <td>
-          <% if (s.start_at) { %>
-            <%= s.start_at.toLocaleString("sk-SK") %>
-          <% } else { %>
-            —
-          <% } %>
-        </td>
-        <td>
-          <% if (s.end_at) { %>
-            <%= s.end_at.toLocaleString("sk-SK") %>
-          <% } else { %>
-            —
-          <% } %>
-        </td>
-        <td><%= s.capacity %></td>
-        <td><%= s.trainer_name || "—" %></td>
-        <td>
-          <a href="/treningy/<%= s.id %>/edit">Upraviť</a>
-          |
-          <form action="/treningy/<%= s.id %>/delete" method="POST" style="display:inline;">
-            <button type="submit" onclick="return confirm('Naozaj zmazať tento tréning?');">
-              Zmazať
-            </button>
-          </form>
-          |
-          <a href="/rezervacie/new?treningId=<%= s.id %>">Rezervovať</a>
-        </td>
-      </tr>
-    <% }) %>
-  </tbody>
-</table>
+  <div class="row">
+    <div class="col-12">
+      <% if (treningy.length === 0) { %>
+        <div class="alert alert-info">Žiadne tréningy nie sú registrované.</div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead class="table-dark">
+              <tr>
+                <th>Názov</th>
+                <th>Začiatok</th>
+                <th>Koniec</th>
+                <th>Kapacita</th>
+                <th>Tréner</th>
+                <th>Akcie</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% treningy.forEach(s => { %>
+                <tr>
+                  <td><%= s.title %></td>
+                  <td>
+                    <% if (s.start_at) { %>
+                      <%= s.start_at.toLocaleString("sk-SK") %>
+                    <% } else { %>
+                      —
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (s.end_at) { %>
+                      <%= s.end_at.toLocaleString("sk-SK") %>
+                    <% } else { %>
+                      —
+                    <% } %>
+                  </td>
+                  <td><%= s.capacity %></td>
+                  <td><%= s.trainer_name || "—" %></td>
+                  <td>
+                    <a href="/treningy/<%= s.id %>/edit" class="btn btn-sm btn-warning">
+                      <img src="/images/editing.png" alt="Upraviť" width="20" height="20">
+                    </a>
+                    <form action="/treningy/<%= s.id %>/delete" method="POST" style="display:inline;">
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Naozaj zmazať tento tréning?');">
+                        <img src="/images/delete.png" alt="Zmazať" width="20" height="20">
+                      </button>
+                    </form>
+                    <a href="/rezervacie/new?treningId=<%= s.id %>" class="btn btn-sm btn-info">
+                      <img src="/images/booking.png" alt="Rezervovať" width="20" height="20">
+                    </a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
 
 <%- include("partials/footer") %>

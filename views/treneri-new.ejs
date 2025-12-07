@@ -1,38 +1,54 @@
 <%- include("partials/header", { title: title }) %>
 
-<h2>Nový tréner</h2>
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-6">
+      <h1 class="mb-4">Nový tréner</h1>
 
-<% if (errors && errors.length > 0) { %>
-  <ul style="color: red;">
-    <% errors.forEach(e => { %>
-      <li><%= e %></li>
-    <% }) %>
-  </ul>
-<% } %>
+      <% if (errors && errors.length > 0) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <strong>Chyby pri validácii:</strong>
+          <ul class="mb-0 mt-2">
+            <% errors.forEach(e => { %>
+              <li><%= e %></li>
+            <% }) %>
+          </ul>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% } %>
 
-<form action="/treneri/new" method="POST">
-  <div class="form-group">
-    <label for="name">Meno trénera</label><br>
-    <input
-      type="text"
-      id="name"
-      name="name"
-      value="<%= formData && formData.name ? formData.name : '' %>"
-    />
+      <form action="/treneri/new" method="POST">
+        <div class="mb-3">
+          <label for="name" class="form-label">Meno trénera</label>
+          <input
+            type="text"
+            class="form-control"
+            id="name"
+            name="name"
+            value="<%= formData && formData.name ? formData.name : '' %>"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="specialization" class="form-label">Špecializácia</label>
+          <input
+            type="text"
+            class="form-control"
+            id="specialization"
+            name="specialization"
+            value="<%= formData && formData.specialization ? formData.specialization : '' %>"
+            required
+          />
+        </div>
+
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-start">
+          <button type="submit" class="btn btn-primary">💾 Uložiť</button>
+          <a href="/treneri" class="btn btn-secondary">❌ Zrušiť</a>
+        </div>
+      </form>
+    </div>
   </div>
-
-  <div class="form-group">
-    <label for="specialization">Špecializácia</label><br>
-    <input
-      type="text"
-      id="specialization"
-      name="specialization"
-      value="<%= formData && formData.specialization ? formData.specialization : '' %>"
-    />
-  </div>
-
-  <button type="submit">Uložiť</button>
-  <a href="/treneri">Späť na zoznam</a>
-</form>
+</div>
 
 <%- include("partials/footer") %>

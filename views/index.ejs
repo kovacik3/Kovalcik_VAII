@@ -1,16 +1,81 @@
 <%- include("partials/header", { title: title }) %>
 
-<h2>Vitaj na rezervačnom portáli</h2>
-<p>Tu si budeš vedieť rezervovať tréningy a pozrieť dostupných trénerov.</p>
+<div class="container my-5">
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="jumbotron bg-light p-5 rounded-lg m-0">
+        <h1 class="display-4">Vitaj na rezervačnom portáli! 💪</h1>
+        <p class="lead">Tu si budeš vedieť rezervovať tréningy a pozrieť dostupných trénerov.</p>
+        <hr class="my-4">
+        <a class="btn btn-primary btn-lg" href="/treningy" role="button">Rezervovať tréning &rarr;</a>
+      </div>
+    </div>
+  </div>
 
-<h3>Nadchádzajúce skupinové tréningy</h3>
-<ul class="list">
-  <% treningy.forEach(t => { %>
-    <li>
-      <strong><%= t.nazov %></strong> –
-      <%= t.den %> <%= t.cas %>
-    </li>
-  <% }) %>
-</ul>
+  <div class="row">
+    <div class="col-12">
+      <h2 class="mb-4">Nadchádzajúce skupinové tréningy</h2>
+    </div>
+  </div>
+
+  <div class="row">
+    <% if (treningy.length === 0) { %>
+      <div class="col-12">
+        <div class="alert alert-info">Žiadne tréningy nie sú dostupné. Skúste neskôr.</div>
+      </div>
+    <% } else { %>
+      <% treningy.forEach(t => { %>
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title"><strong><%= t.nazov %></strong></h5>
+              <p class="card-text">
+                📅 <strong><%= t.den %></strong><br>
+                🕐 <strong><%= t.cas %></strong>
+              </p>
+            </div>
+            <div class="card-footer bg-white border-top">
+              <a href="/rezervacie/new?treningId=<%= t.id %>" class="btn btn-sm btn-primary w-100">Rezervovať</a>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+
+  <div class="row mt-5">
+    <div class="col-12">
+      <div class="row">
+        <div class="col-md-4 mb-4">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title">🏋️ Tréningy</h5>
+              <p class="card-text">Prezerať dostupné tréningy</p>
+              <a href="/treningy" class="btn btn-outline-primary">Prejsť &rarr;</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title">👨‍🏫 Tréneri</h5>
+              <p class="card-text">Poznať našich kvalifikovaných trénerov</p>
+              <a href="/treneri" class="btn btn-outline-primary">Prejsť &rarr;</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title">📋 Rezervácie</h5>
+              <p class="card-text">Správa mojich rezervácií</p>
+              <a href="/rezervacie" class="btn btn-outline-primary">Prejsť &rarr;</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <%- include("partials/footer") %>

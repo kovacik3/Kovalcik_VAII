@@ -1,37 +1,50 @@
 <%- include("partials/header", { title: title }) %>
 
-<h2>Zoznam trénerov</h2>
+<div class="container my-5">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1 class="mb-4">Zoznam trénerov</h1>
+      <a href="/treneri/new" class="btn btn-success">➕ Pridať trénera</a>
+    </div>
+  </div>
 
-<p>
-  <a href="/treneri/new">Pridať trénera</a>
-</p>
-
-<table class="table">
-  <thead>
-    <tr>
-      <th>Meno</th>
-      <th>Špecializácia</th>
-      <th>Akcie</th> <!-- nový stĺpec -->
-    </tr>
-  </thead>
-  <tbody>
-    <% treneri.forEach(trener => { %>
-      <tr>
-        <td><%= trener.name %></td>
-        <td><%= trener.specialization %></td>
-        <td>
-        <a href="/treneri/<%= trener.id %>/edit">Upraviť</a>
-  |
-        <form action="/treneri/<%= trener.id %>/delete" method="POST" style="display:inline;">
-          <button type="submit" onclick="return confirm('Naozaj zmazať tohto trénera?');">
-             Zmazať
-          </button>
-        </form>
-      </td>
-
-      </tr>
-    <% }) %>
-  </tbody>
-</table>
+  <div class="row">
+    <div class="col-12">
+      <% if (treneri.length === 0) { %>
+        <div class="alert alert-info">Žiadni tréneri nie sú registrovaní.</div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead class="table-dark">
+              <tr>
+                <th>Meno</th>
+                <th>Špecializácia</th>
+                <th>Akcie</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% treneri.forEach(trener => { %>
+                <tr>
+                  <td><%= trener.name %></td>
+                  <td><%= trener.specialization %></td>
+                  <td>
+                    <a href="/treneri/<%= trener.id %>/edit" class="btn btn-sm btn-warning">
+                      <img src="/images/editing.png" alt="Upraviť" width="20" height="20">
+                    </a>
+                    <form action="/treneri/<%= trener.id %>/delete" method="POST" style="display:inline;">
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Naozaj zmazať tohto trénera?');">
+                        <img src="/images/delete.png" alt="Zmazať" width="20" height="20">
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
 
 <%- include("partials/footer") %>

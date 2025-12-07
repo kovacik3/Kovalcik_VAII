@@ -6,11 +6,7 @@
 const express = require("express");
 const path = require("path");
 const db = require("./db");
-const {
-  validujNovehoTrenera,
-  validujNovyTrening,
-  validujNovuRezervaciju,
-} = require("./validacia-server"); 
+const validaciaServer = require('./validacia-server');
 
 // Inicializácia Express aplikácie
 const app = express();
@@ -100,7 +96,7 @@ app.post("/treneri/new", async (req, res) => {
   const { name, specialization } = req.body;
 
   // Validácia pomocou modulu validacia-server
-  const errors = validujNovehoTrenera(name, specialization);
+  const errors = validaciaServer.validujNovehoTrenera(req.body);
 
   // Ak sú chyby, vrátime formulár s chybovými správami
   if (errors.length > 0) {
@@ -170,7 +166,7 @@ app.post("/treneri/:id/edit", async (req, res) => {
   const { name, specialization } = req.body;
 
   // Validácia vstupných dát pomocou modulu validacia-server
-  const errors = validujNovehoTrenera(name, specialization);
+  const errors = validaciaServer.validujNovehoTrenera(req.body);
 
   if (errors.length > 0) {
     // Znovu načítame trénera pre zobrazenie formulara s chybami
@@ -239,7 +235,7 @@ app.post("/treningy/new", async (req, res) => {
   const { title, start_at, end_at, capacity, trainer_id } = req.body;
 
   // Validácia pomocou modulu validacia-server
-  const errors = validujNovyTrening(title, start_at, end_at, capacity);
+  const errors = validaciaServer.validujNovyTrening(req.body);
 
   const formData = { title, start_at, end_at, capacity, trainer_id };
 
@@ -349,7 +345,7 @@ app.post("/treningy/:id/edit", async (req, res) => {
   const { title, start_at, end_at, capacity, trainer_id } = req.body;
 
   // Validácia vstupných údajov pomocou modulu validacia-server
-  const errors = validujNovyTrening(title, start_at, end_at, capacity);
+  const errors = validaciaServer.validujNovyTrening(req.body);
 
   // Ak sú chyby, vrátime formulár s pôvodnými dátami a chybami
   if (errors.length > 0) {
@@ -465,7 +461,7 @@ app.post("/rezervacie/new", async (req, res) => {
   const { session_id, client_name, note } = req.body;
 
   // Validácia pomocou modulu validacia-server
-  const errors = validujNovuRezervaciju(session_id, client_name, note);
+  const errors = validaciaServer.validujNovuRezervaciju(req.body);
 
   let session = null;
 

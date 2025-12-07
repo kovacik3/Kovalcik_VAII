@@ -1,48 +1,65 @@
 <%- include("partials/header", { title: title }) %>
 
-<h2>Moje rezervácie</h2>
+<div class="container my-5">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1 class="mb-4">Moje rezervácie</h1>
+      <a href="/treningy" class="btn btn-primary">➕ Nová rezervácia</a>
+    </div>
+  </div>
 
-<table class="table">
-  <thead>
-    <tr>
-      <th>Tréning</th>
-      <th>Začiatok</th>
-      <th>Meno klienta</th>
-      <th>Poznámka</th>
-      <th>Vytvorené</th>
-      <th>Akcie</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% rezervacie.forEach(r => { %>
-      <tr>
-        <td><%= r.session_title %></td>
-        <td>
-          <% if (r.session_start) { %>
-            <%= r.session_start.toLocaleString("sk-SK") %>
-          <% } else { %>
-            —
-          <% } %>
-        </td>
-        <td><%= r.client_name %></td>
-        <td><%= r.note || "—" %></td>
-        <td>
-          <% if (r.created_at) { %>
-            <%= r.created_at.toLocaleString("sk-SK") %>
-          <% } else { %>
-            —
-          <% } %>
-        </td>
-        <td>
-          <form action="/rezervacie/<%= r.id %>/delete" method="POST" style="display:inline;">
-            <button type="submit" onclick="return confirm('Naozaj zmazať túto rezerváciu?');">
-              Zmazať
-            </button>
-          </form>
-        </td>
-      </tr>
-    <% }) %>
-  </tbody>
-</table>
+  <div class="row">
+    <div class="col-12">
+      <% if (rezervacie.length === 0) { %>
+        <div class="alert alert-info">Nemáte žiadne rezervácie. <a href="/treningy">Rezervujte si tréning!</a></div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead class="table-dark">
+              <tr>
+                <th>Tréning</th>
+                <th>Začiatok</th>
+                <th>Meno klienta</th>
+                <th>Poznámka</th>
+                <th>Vytvorené</th>
+                <th>Akcie</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% rezervacie.forEach(r => { %>
+                <tr>
+                  <td><%= r.session_title %></td>
+                  <td>
+                    <% if (r.session_start) { %>
+                      <%= r.session_start.toLocaleString("sk-SK") %>
+                    <% } else { %>
+                      —
+                    <% } %>
+                  </td>
+                  <td><%= r.client_name %></td>
+                  <td><%= r.note || "—" %></td>
+                  <td>
+                    <% if (r.created_at) { %>
+                      <%= r.created_at.toLocaleString("sk-SK") %>
+                    <% } else { %>
+                      —
+                    <% } %>
+                  </td>
+                  <td>
+                    <form action="/rezervacie/<%= r.id %>/delete" method="POST" style="display:inline;">
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Naozaj zmazať túto rezerváciu?');">
+                        <img src="/images/delete.png" alt="Zmazať" width="20" height="20">
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
 
 <%- include("partials/footer") %>

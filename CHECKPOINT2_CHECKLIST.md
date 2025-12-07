@@ -69,12 +69,12 @@ Táta aplikácia implementuje kompletný rezervačný systém pre posilňovňu s
   - [x] Padding: 16px
 
 ### Chýba:
-- [ ] **Responzívny dizajn (@media queries)**
-  - [ ] Tablet (768px a menej)
-  - [ ] Mobil (480px a menej)
-  - [ ] Flexbox úpravy pre malé obrazovky
+- [X] **Responzívny dizajn (@media queries)**
+  - [X] Tablet (768px a menej)
+  - [X] Mobil (480px a menej)
+  - [X] Flexbox úpravy pre malé obrazovky
 
-**STATUS: 80% - POTREBUJE @MEDIA QUERIES**
+**STATUS: 100% - POTREBUJE @MEDIA QUERIES**
 
 ---
 

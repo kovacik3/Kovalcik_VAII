@@ -1,70 +1,92 @@
 <%- include("partials/header", { title: title }) %>
 
-<h2>Upraviť tréning</h2>
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8">
+      <h1 class="mb-4">Upraviť tréning</h1>
 
-<% if (errors && errors.length > 0) { %>
-  <ul style="color: red;">
-    <% errors.forEach(e => { %>
-      <li><%= e %></li>
-    <% }) %>
-  </ul>
-<% } %>
+      <% if (errors && errors.length > 0) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <strong>Chyby pri validácii:</strong>
+          <ul class="mb-0 mt-2">
+            <% errors.forEach(e => { %>
+              <li><%= e %></li>
+            <% }) %>
+          </ul>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% } %>
 
-<form action="/treningy/<%= trening.id %>/edit" method="POST">
-  <div class="form-group">
-    <label for="title">Názov tréningu</label><br>
-    <input
-      type="text"
-      id="title"
-      name="title"
-      value="<%= trening.title %>"
-    />
+      <form action="/treningy/<%= trening.id %>/edit" method="POST">
+        <div class="mb-3">
+          <label for="title" class="form-label">Názov tréningu</label>
+          <input
+            type="text"
+            class="form-control"
+            id="title"
+            name="title"
+            value="<%= trening.title %>"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="start_at" class="form-label">Začiatok</label>
+          <input
+            type="datetime-local"
+            class="form-control"
+            id="start_at"
+            name="start_at"
+            value="<%= trening.start_at ? trening.start_at.toISOString().slice(0,16) : '' %>"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="end_at" class="form-label">Koniec</label>
+          <input
+            type="datetime-local"
+            class="form-control"
+            id="end_at"
+            name="end_at"
+            value="<%= trening.end_at ? trening.end_at.toISOString().slice(0,16) : '' %>"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="capacity" class="form-label">Kapacita</label>
+          <input
+            type="number"
+            class="form-control"
+            id="capacity"
+            name="capacity"
+            min="1"
+            value="<%= trening.capacity %>"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="trainer_id" class="form-label">Tréner (ID)</label>
+          <input
+            type="number"
+            class="form-control"
+            id="trainer_id"
+            name="trainer_id"
+            min="1"
+            value="<%= trening.trainer_id || '' %>"
+            required
+          />
+        </div>
+
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-start">
+          <button type="submit" class="btn btn-primary">💾 Uložiť zmeny</button>
+          <a href="/treningy" class="btn btn-secondary">❌ Zrušiť</a>
+        </div>
+      </form>
+    </div>
   </div>
-
-  <div class="form-group">
-    <label for="start_at">Začiatok</label><br>
-    <input
-      type="datetime-local"
-      id="start_at"
-      name="start_at"
-      value="<%= trening.start_at ? trening.start_at.toISOString().slice(0,16) : '' %>"
-    />
-  </div>
-
-  <div class="form-group">
-    <label for="end_at">Koniec</label><br>
-    <input
-      type="datetime-local"
-      id="end_at"
-      name="end_at"
-      value="<%= trening.end_at ? trening.end_at.toISOString().slice(0,16) : '' %>"
-    />
-  </div>
-
-  <div class="form-group">
-    <label for="capacity">Kapacita</label><br>
-    <input
-      type="number"
-      id="capacity"
-      name="capacity"
-      min="1"
-      value="<%= trening.capacity %>"
-    />
-  </div>
-
-  <div class="form-group">
-    <label for="trainer_id">Tréner (ID)</label><br>
-    <input
-      type="number"
-      id="trainer_id"
-      name="trainer_id"
-      min="1"
-      value="<%= trening.trainer_id || '' %>"
-    />
-  </div>
-
-  <button type="submit">Uložiť zmeny</button>
-  <a href="/treningy">Späť na zoznam</a>
-</form>
+</div>
 
 <%- include("partials/footer") %>

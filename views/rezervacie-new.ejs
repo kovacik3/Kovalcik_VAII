@@ -38,7 +38,7 @@
             class="form-control"
             id="client_name"
             name="client_name"
-            value="<%= formData.client_name %>"
+            value="<%= formData && formData.client_name ? formData.client_name : '' %>"
             required
           />
         </div>
@@ -50,7 +50,7 @@
             class="form-control"
             id="note"
             name="note"
-            value="<%= formData.note %>"
+            value="<%= formData && formData.note ? formData.note : '' %>"
             placeholder="Napr. potrebujem pomoc pri cvičení..."
           />
         </div>

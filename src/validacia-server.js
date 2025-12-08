@@ -20,7 +20,7 @@ function validujNovehoTrenera(trener) {
     } else if (name.trim().length < 2) {
         errors.push("Meno musí mať aspoň 2 znaky");
     } else if (name.trim().length > 100) {
-        errors.push("Mno nesmie prekročiť 100 znakov");
+        errors.push("Meno nesmie prekročiť 100 znakov");
     }
 
     // Validácia špecializácie
@@ -65,8 +65,8 @@ function validujNovyTrening(trening) {
 
     // Validácia vzťahu medzi časom začatia a konca
     if (start_at && end_at && start_at.trim() !== "" && end_at.trim() !== "") {
-        const startDate = new Date(start_at.replace("T", " "));
-        const endDate = new Date(end_at.replace("T", " "));
+        const startDate = new Date(start_at);
+        const endDate = new Date(end_at);
         
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
             errors.push("Neplatný formát času");

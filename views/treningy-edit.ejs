@@ -17,7 +17,7 @@
         </div>
       <% } %>
 
-      <form action="/treningy/<%= trening.id %>/edit" method="POST">
+      <form action="/treningy/<%= trening.id %>/edit" method="POST" class="js-validate" novalidate>
         <div class="mb-3">
           <label for="title" class="form-label">Názov tréningu</label>
           <input

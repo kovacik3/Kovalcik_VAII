@@ -1,2 +1,50 @@
-/* Bootstrap je nahraný z CDN, tento súbor je teraz prázdny */
-/* Budete tu môcť pridať vlastný CSS neskôr */
+
+body {
+  background-color: #f3f4f6;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.6;
+}
+
+main {
+  padding-bottom: 3rem;
+}
+
+h1 {
+  font-size: 2.1rem;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.navbar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.navbar-brand img {
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+}
+
+.card {
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+}
+
+.btn-primary {
+  border-radius: 999px;
+  padding-left: 1.4rem;
+  padding-right: 1.4rem;
+}
+
+.form-control:focus {
+  box-shadow: 0 0 0 0.16rem rgba(13, 110, 253, 0.35);
+  border-color: #0d6efd;
+}
+
+footer {
+  font-size: 0.9rem;
+}

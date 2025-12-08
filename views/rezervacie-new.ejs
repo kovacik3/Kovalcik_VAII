@@ -28,7 +28,7 @@
         </div>
       <% } %>
 
-      <form action="/rezervacie/new" method="POST">
+      <form action="/rezervacie/new" method="POST" class="js-validate" novalidate>
         <input type="hidden" name="session_id" value="<%= session.id %>" />
 
         <div class="mb-3">

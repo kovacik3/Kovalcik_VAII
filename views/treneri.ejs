@@ -4,7 +4,9 @@
   <div class="row mb-4">
     <div class="col-12">
       <h1 class="mb-4">Zoznam trénerov</h1>
-      <a href="/treneri/new" class="btn btn-success">➕ Pridať trénera</a>
+      <% if (isAdmin) { %>
+        <a href="/treneri/new" class="btn btn-success">+ Pridať trénera</a>
+      <% } %>
     </div>
   </div>
 
@@ -19,7 +21,9 @@
               <tr>
                 <th>Meno</th>
                 <th>Špecializácia</th>
-                <th>Akcie</th>
+                <% if (isAdmin) { %>
+                  <th>Akcie</th>
+                <% } %>
               </tr>
             </thead>
             <tbody>
@@ -27,16 +31,18 @@
                 <tr>
                   <td><%= trener.name %></td>
                   <td><%= trener.specialization %></td>
-                  <td>
-                    <a href="/treneri/<%= trener.id %>/edit" class="btn btn-sm btn-warning">
-                      <img src="/images/editing.png" alt="Upraviť" width="20" height="20">
-                    </a>
-                    <form action="/treneri/<%= trener.id %>/delete" method="POST" style="display:inline;">
-                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Naozaj zmazať tohto trénera?');">
-                        <img src="/images/delete.png" alt="Zmazať" width="20" height="20">
-                      </button>
-                    </form>
-                  </td>
+                  <% if (isAdmin) { %>
+                    <td>
+                      <a href="/treneri/<%= trener.id %>/edit" class="btn btn-sm btn-warning">
+                        <img src="/images/editing.png" alt="Upraviť" width="20" height="20">
+                      </a>
+                      <form action="/treneri/<%= trener.id %>/delete" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Naozaj zmazať tohto trénera?');">
+                          <img src="/images/delete.png" alt="Zmazať" width="20" height="20">
+                        </button>
+                      </form>
+                    </td>
+                  <% } %>
                 </tr>
               <% }) %>
             </tbody>

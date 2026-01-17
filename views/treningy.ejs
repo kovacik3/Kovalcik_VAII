@@ -4,7 +4,9 @@
   <div class="row mb-4">
     <div class="col-12">
       <h1 class="mb-4">Tréningy (sessions)</h1>
-      <a href="/treningy/new" class="btn btn-success">➕ Pridať tréning</a>
+      <% if (isAdmin || isTrainer) { %>
+        <a href="/treningy/new" class="btn btn-success">➕ Pridať tréning</a>
+      <% } %>
     </div>
   </div>
 
@@ -22,7 +24,10 @@
                 <th>Koniec</th>
                 <th>Kapacita</th>
                 <th>Tréner</th>
-                <th>Akcie</th>
+                <% if (isAdmin || isTrainer) { %>
+                  <th>Akcie</th>
+                <% } %>
+                <th>Rezervovať</th>
               </tr>
             </thead>
             <tbody>
@@ -45,15 +50,19 @@
                   </td>
                   <td><%= s.capacity %></td>
                   <td><%= s.trainer_name || "—" %></td>
+                  <% if (isAdmin || isTrainer) { %>
+                    <td>
+                      <a href="/treningy/<%= s.id %>/edit" class="btn btn-sm btn-warning">
+                        <img src="/images/editing.png" alt="Upraviť" width="20" height="20">
+                      </a>
+                      <form action="/treningy/<%= s.id %>/delete" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Naozaj zmazať tento tréning?');">
+                          <img src="/images/delete.png" alt="Zmazať" width="20" height="20">
+                        </button>
+                      </form>
+                    </td>
+                  <% } %>
                   <td>
-                    <a href="/treningy/<%= s.id %>/edit" class="btn btn-sm btn-warning">
-                      <img src="/images/editing.png" alt="Upraviť" width="20" height="20">
-                    </a>
-                    <form action="/treningy/<%= s.id %>/delete" method="POST" style="display:inline;">
-                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Naozaj zmazať tento tréning?');">
-                        <img src="/images/delete.png" alt="Zmazať" width="20" height="20">
-                      </button>
-                    </form>
                     <a href="/rezervacie/new?treningId=<%= s.id %>" class="btn btn-sm btn-info">
                       <img src="/images/booking.png" alt="Rezervovať" width="20" height="20">
                     </a>

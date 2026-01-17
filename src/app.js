@@ -2,13 +2,21 @@
 // KNIŽNICE A ZÁKLADNÉ NASTAVENIA
 // ============================================
 
-// Import potrebných modulov
+// Čítame konfiguráciu z .env (heslá, DB, session secret)
+require("dotenv").config();
+// Express je webový server, path na prácu s cestami
 const express = require("express");
 const path = require("path");
+// Session: aby si server pamätal, kto je prihlásený
+const session = require("express-session");
+// bcrypt: bezpečné ukladanie a porovnávanie hesiel
+const bcrypt = require("bcrypt");
+// db: pripojenie do MySQL
 const db = require("./db");
+// validácia vstupov pre formuláre
 const validaciaServer = require('./validacia-server');
 
-// Inicializácia Express aplikácie
+// Tu sa vytvorí Express aplikácia a nastaví port
 const app = express();
 const PORT = 3000;
 
@@ -16,11 +24,104 @@ const PORT = 3000;
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "..", "views"));
 
-// Middleware pre statické súbory (CSS, obrázky, atď.)
+// Sprístupní CSS/JS/obrázky z public/
 app.use(express.static(path.join(__dirname, "..", "public")));
 
-// Middleware pre parsovanie POST dát z formulárov
+// Umožní čítať dáta z formulárov (req.body)
 app.use(express.urlencoded({ extended: true }));
+
+// Sessions: uloží info o prihlásenom užívateľovi na serveri,
+// prehliadač má len cookie s identifikátorom
+app.use(session({
+  secret: process.env.SESSION_SECRET || "dev-session-secret-change-me",
+  resave: false,
+  saveUninitialized: false,
+}));
+
+// Do EJS šablón posielame info o prihlásenom (kvôli skrytiu/zobrazeniu tlačidiel)
+app.use((req, res, next) => {
+  res.locals.currentUser = req.session.user || null;
+  res.locals.isAuthenticated = !!req.session.user;
+  res.locals.isAdmin = req.session.user?.role === "admin";
+  res.locals.isTrainer = req.session.user?.role === "trainer";
+  next();
+});
+
+// Ak nie si prihlásený, pošleme ťa na /login
+function requireAuth(req, res, next) {
+  if (!req.session.user) {
+    return res.redirect("/login");
+  }
+  next();
+}
+
+// Ak nemáš požadovanú rolu (napr. admin), dostaneš 403
+function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!req.session.user) {
+      return res.redirect("/login");
+    }
+    if (!roles.includes(req.session.user.role)) {
+      return res.status(403).send("Nedostatočné oprávnenie");
+    }
+    next();
+  };
+}
+
+// ============================================
+// AUTENTIFIKÁCIA
+// ============================================
+
+// Formulár na prihlásenie. Ak už si prihlásený, presmerujeme domov.
+app.get("/login", (req, res) => {
+  if (req.session.user) {
+    return res.redirect("/");
+  }
+  res.render("login", { title: "Prihlásenie", errors: [], formData: {} });
+});
+
+// Spracovanie prihlásenia: nájdeme usera podľa emailu, porovnáme heslo cez bcrypt
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  const errors = [];
+
+  if (!email || !password) {
+    errors.push("E-mail a heslo sú povinné.");
+  }
+
+  if (errors.length === 0) {
+    try {
+      const [rows] = await db.query(
+        "SELECT id, email, password_hash, role FROM users WHERE email = ?",
+        [email]
+      );
+
+      if (rows.length === 0) {
+        errors.push("Nesprávne prihlasovacie údaje.");
+      } else {
+        const user = rows[0];
+        const ok = await bcrypt.compare(password, user.password_hash);
+        if (!ok) {
+          errors.push("Nesprávne prihlasovacie údaje.");
+        } else {
+          req.session.user = { id: user.id, email: user.email, role: user.role };
+          return res.redirect("/");
+        }
+      }
+    } catch (err) {
+      console.error("Chyba pri prihlasovaní:", err);
+      errors.push("Chyba servera pri prihlasovaní.");
+    }
+  }
+
+  res.render("login", { title: "Prihlásenie", errors, formData: { email } });
+});
+
+app.post("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/login");
+  });
+});
 
 // ============================================
 // DOMOVSKÁ STRÁNKA
@@ -64,26 +165,9 @@ app.get("/", async (req, res) => {
 // SPRÁVA TRÉNEROV (TRAINERS)
 // ============================================
 
-/**
- * GET /treneri/new
- * Zobrazí formulár pre vytvorenie nového trénera
- */
-// Formulár pre nového trénera
-app.get("/treneri/new", (req, res) => {
-  res.render("treneri-new", {
-    title: "Nový tréner",
-    errors: [],
-    formData: {}
-  });
-});
-
-/**
- * GET /treneri
- * Načíta a zobrazí zoznam všetkých trénerov z databázy
- */
+// Zoznam trénerov (viditeľný každému)
 app.get("/treneri", async (req, res) => {
   try {
-    // Dotaz na databázu: získaj ID, meno a špecializáciu všetkých trénerov
     const [rows] = await db.query(
       "SELECT id, name, specialization FROM trainers"
     );
@@ -98,19 +182,20 @@ app.get("/treneri", async (req, res) => {
   }
 });
 
-/**
- * POST /treneri/new
- * Spracuje odoslanie formulára pre vytvorenie nového trénera
- * Validuje vstupné dáta a uloží trénera do databázy
- */
-// Spracovanie formulára - vytvorenie trénera
-app.post("/treneri/new", async (req, res) => {
-  const { name, specialization } = req.body;
+// Formulár pre nového trénera (iba admin)
+app.get("/treneri/new", requireRole("admin"), (req, res) => {
+  res.render("treneri-new", {
+    title: "Nový tréner",
+    errors: [],
+    formData: {}
+  });
+});
 
-  // Validácia pomocou modulu validacia-server
+// Spracovanie formulára – vytvorenie trénera (iba admin)
+app.post("/treneri/new", requireRole("admin"), async (req, res) => {
+  const { name, specialization } = req.body;
   const errors = validaciaServer.validujNovehoTrenera(req.body);
 
-  // Ak sú chyby, vrátime formulár s chybovými správami
   if (errors.length > 0) {
     return res.render("treneri-new", {
       title: "Nový tréner",
@@ -120,13 +205,10 @@ app.post("/treneri/new", async (req, res) => {
   }
 
   try {
-    // Vloží nového trénera do databázy
     await db.query(
       "INSERT INTO trainers (name, specialization) VALUES (?, ?)",
       [name.trim(), specialization.trim()]
     );
-
-    // Po úspešnom uložení presmeruj na zoznam trénerov
     res.redirect("/treneri");
   } catch (err) {
     console.error("Chyba pri ukladani trenera:", err);
@@ -134,31 +216,23 @@ app.post("/treneri/new", async (req, res) => {
   }
 });
 
-/**
- * GET /treneri/:id/edit
- * Načíta údaje konkrétneho trénera a zobrazí formulár na úpravu
- */
-// Formulár na úpravu trénera
-app.get("/treneri/:id/edit", async (req, res) => {
+// Formulár na úpravu trénera (iba admin)
+app.get("/treneri/:id/edit", requireRole("admin"), async (req, res) => {
   const trainerId = req.params.id;
 
   try {
-    // Dotaz na databázu: získaj údaje konkrétneho trénera podľa ID
     const [rows] = await db.query(
       "SELECT id, name, specialization FROM trainers WHERE id = ?",
       [trainerId]
     );
 
-    // Ak tréner neexistuje, vráť chybu 404
     if (rows.length === 0) {
       return res.status(404).send("Tréner nenájdený");
     }
 
-    const trainer = rows[0];
-
     res.render("treneri-edit", {
       title: "Upraviť trénera",
-      trainer,
+      trainer: rows[0],
       errors: []
     });
   } catch (err) {
@@ -167,21 +241,13 @@ app.get("/treneri/:id/edit", async (req, res) => {
   }
 });
 
-/**
- * POST /treneri/:id/edit
- * Spracuje odoslanie formulára pre úpravu existujúceho trénera
- * Validuje dáta a aktualizuje databázu
- */
-// Spracovanie úpravy trénera
-app.post("/treneri/:id/edit", async (req, res) => {
+// Uloženie zmien trénera (iba admin)
+app.post("/treneri/:id/edit", requireRole("admin"), async (req, res) => {
   const trainerId = req.params.id;
   const { name, specialization } = req.body;
-
-  // Validácia vstupných dát pomocou modulu validacia-server
   const errors = validaciaServer.validujNovehoTrenera(req.body);
 
   if (errors.length > 0) {
-    // Znovu načítame trénera pre zobrazenie formulara s chybami
     return res.render("treneri-edit", {
       title: "Upraviť trénera",
       trainer: { id: trainerId, name, specialization },
@@ -190,7 +256,6 @@ app.post("/treneri/:id/edit", async (req, res) => {
   }
 
   try {
-    // Aktualizuje údaje trénera v databáze
     await db.query(
       "UPDATE trainers SET name = ?, specialization = ? WHERE id = ?",
       [name.trim(), specialization.trim(), trainerId]
@@ -203,15 +268,12 @@ app.post("/treneri/:id/edit", async (req, res) => {
   }
 });
 
-/**
- * POST /treneri/:id/delete
- * Vymaže trénera z databázy podľa ID
- */
-app.post("/treneri/:id/delete", async (req, res) => {
+// Vymazanie trénera (iba admin) – najprv null FK, potom delete
+app.post("/treneri/:id/delete", requireRole("admin"), async (req, res) => {
   const trainerId = req.params.id;
 
   try {
-    // Vymaž trénera z databázy
+    await db.query("UPDATE sessions SET trainer_id = NULL WHERE trainer_id = ?", [trainerId]);
     await db.query("DELETE FROM trainers WHERE id = ?", [trainerId]);
     res.redirect("/treneri");
   } catch (err) {
@@ -219,31 +281,28 @@ app.post("/treneri/:id/delete", async (req, res) => {
     res.status(500).send("Chyba servera pri mazani trenera");
   }
 });
-
-
-
 // ============================================
 // SPRÁVA TRÉNINGOV (TRENINGY)
 // ============================================
 
-/**
- * GET /treningy/new
- * Zobrazí formulár pre vytvorenie nového tréningového kurzu
- */
-app.get("/treningy/new", (req, res) => {
-  res.render("treningy-new", {
-    title: "Nový tréning",
-    errors: [],
-    formData: {}
-  });
+// Formulár na nový tréning (admin aj tréner) + select trénera
+app.get("/treningy/new", requireRole("admin", "trainer"), async (req, res) => {
+  try {
+    const [trainers] = await db.query("SELECT id, name FROM trainers ORDER BY name");
+    res.render("treningy-new", {
+      title: "Nový tréning",
+      errors: [],
+      formData: {},
+      trainers,
+    });
+  } catch (err) {
+    console.error("Chyba pri nacitani trenerov pre novy trening:", err);
+    res.status(500).send("Chyba servera pri priprave formulára");
+  }
 });
 
-/**
- * POST /treningy/new
- * Spracuje vytvorenie nového tréningového kurzu
- * Validuje vstupné údaje (názov, časy, kapacitu) a uloží do DB
- */
-app.post("/treningy/new", async (req, res) => {
+// Uloženie nového tréningu (admin aj tréner)
+app.post("/treningy/new", requireRole("admin", "trainer"), async (req, res) => {
   const { title, start_at, end_at, capacity, trainer_id } = req.body;
 
   // Validácia pomocou modulu validacia-server
@@ -252,11 +311,18 @@ app.post("/treningy/new", async (req, res) => {
   const formData = { title, start_at, end_at, capacity, trainer_id };
 
   if (errors.length > 0) {
-    return res.render("treningy-new", {
-      title: "Nový tréning",
-      errors,
-      formData
-    });
+    try {
+      const [trainers] = await db.query("SELECT id, name FROM trainers ORDER BY name");
+      return res.render("treningy-new", {
+        title: "Nový tréning",
+        errors,
+        formData,
+        trainers,
+      });
+    } catch (err) {
+      console.error("Chyba pri nacitani trenerov pri validacii noveho treningu:", err);
+      return res.status(500).send("Chyba servera pri validacii formulára");
+    }
   }
 
   // Pre MySQL: datetime-local je vo formáte "YYYY-MM-DDTHH:MM"
@@ -285,10 +351,7 @@ app.post("/treningy/new", async (req, res) => {
   }
 });
 
-/**
- * GET /treningy
- * Načíta a zobrazí zoznam všetkých tréningov s menom priraadeného trénera
- */
+// Zoznam všetkých tréningov + meno trénera
 app.get("/treningy", async (req, res) => {
   try {
     // SQL JOIN pre spojenie tréningov s trénerni
@@ -315,11 +378,8 @@ app.get("/treningy", async (req, res) => {
   }
 });
 
-/**
- * GET /treningy/:id/edit
- * Načíta údaje konkrétneho tréningového kurzu a zobrazí formulár na úpravu
- */
-app.get("/treningy/:id/edit", async (req, res) => {
+// Formulár na úpravu tréningu (admin aj tréner) + select trénera
+app.get("/treningy/:id/edit", requireRole("admin", "trainer"), async (req, res) => {
   const treningId = req.params.id;
 
   try {
@@ -336,9 +396,12 @@ app.get("/treningy/:id/edit", async (req, res) => {
 
     const trening = rows[0];
 
+    const [trainers] = await db.query("SELECT id, name FROM trainers ORDER BY name");
+
     res.render("treningy-edit", {
       title: "Upraviť tréning",
       trening,
+      trainers,
       errors: []
     });
   } catch (err) {
@@ -347,12 +410,8 @@ app.get("/treningy/:id/edit", async (req, res) => {
   }
 });
 
-/**
- * POST /treningy/:id/edit
- * Spracuje úpravu existujúceho tréningového kurzu
- * Validuje dáta a aktualizuje databázu
- */
-app.post("/treningy/:id/edit", async (req, res) => {
+// Uloženie zmien tréningu (admin aj tréner)
+app.post("/treningy/:id/edit", requireRole("admin", "trainer"), async (req, res) => {
   const treningId = req.params.id;
   const { title, start_at, end_at, capacity, trainer_id } = req.body;
 
@@ -361,19 +420,26 @@ app.post("/treningy/:id/edit", async (req, res) => {
 
   // Ak sú chyby, vrátime formulár s pôvodnými dátami a chybami
   if (errors.length > 0) {
-    return res.render("treningy-edit", {
-      title: "Upraviť tréning",
-      trening: {
-        id: treningId,
-        title,
-        // Späť do datetime-local formátu
-        start_at: start_at ? new Date(start_at) : null,
-        end_at: end_at ? new Date(end_at) : null,
-        capacity,
-        trainer_id
-      },
-      errors
-    });
+    try {
+      const [trainers] = await db.query("SELECT id, name FROM trainers ORDER BY name");
+      return res.render("treningy-edit", {
+        title: "Upraviť tréning",
+        trening: {
+          id: treningId,
+          title,
+          // Späť do datetime-local formátu
+          start_at: start_at ? new Date(start_at) : null,
+          end_at: end_at ? new Date(end_at) : null,
+          capacity,
+          trainer_id
+        },
+        trainers,
+        errors
+      });
+    } catch (err) {
+      console.error("Chyba pri nacitani trenerov pri validacii upravy treningu:", err);
+      return res.status(500).send("Chyba servera pri validacii formulára");
+    }
   }
 
   // Konvertovanie dátumu pre databázu
@@ -403,11 +469,8 @@ app.post("/treningy/:id/edit", async (req, res) => {
   }
 });
 
-/**
- * POST /treningy/:id/delete
- * Vymaže tréningový kurz z databázy podľa ID
- */
-app.post("/treningy/:id/delete", async (req, res) => {
+// Vymazanie tréningu (admin aj tréner)
+app.post("/treningy/:id/delete", requireRole("admin", "trainer"), async (req, res) => {
   const treningId = req.params.id;
 
   try {
@@ -426,11 +489,7 @@ app.post("/treningy/:id/delete", async (req, res) => {
 // SPRÁVA REZERVÁCIÍ (RESERVATIONS)
 // ============================================
 
-/**
- * GET /rezervacie/new
- * Zobrazí formulár pre vytvorenie novej rezervácie
- * Query parameter: ?treningId=ID pre sprehľadnenie, ktorý tréning sa rezervuje
- */
+// Rezervačný formulár pre vybraný tréning
 app.get("/rezervacie/new", async (req, res) => {
   const treningId = req.query.treningId;
 
@@ -464,11 +523,7 @@ app.get("/rezervacie/new", async (req, res) => {
   }
 });
 
-/**
- * POST /rezervacie/new
- * Spracuje vytvorenie novej rezervácie
- * Validuje meno klienta a uloží rezerváciu do databázy
- */
+// Uloženie novej rezervácie
 app.post("/rezervacie/new", async (req, res) => {
   const { session_id, client_name, note } = req.body;
 
@@ -517,10 +572,7 @@ app.post("/rezervacie/new", async (req, res) => {
   }
 });
 
-/**
- * GET /rezervacie
- * Načíta a zobrazí zoznam všetkých rezervácií s informáciami o tréningi
- */
+// Zoznam všetkých rezervácií (s detailmi tréningu)
 app.get("/rezervacie", async (req, res) => {
   try {
     // SQL JOIN pre spojenie rezervácií s tréningi a ich informáciami
@@ -547,10 +599,7 @@ app.get("/rezervacie", async (req, res) => {
   }
 });
 
-/**
- * POST /rezervacie/:id/delete
- * Vymaže rezerváciu z databázy podľa ID
- */
+// Vymazanie rezervácie
 app.post("/rezervacie/:id/delete", async (req, res) => {
   const reservationId = req.params.id;
 

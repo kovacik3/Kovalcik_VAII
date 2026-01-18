@@ -268,12 +268,11 @@ app.post("/treneri/:id/edit", requireRole("admin"), async (req, res) => {
   }
 });
 
-// Vymazanie trénera (iba admin) – najprv null FK, potom delete
+// Vymazanie trénera (iba admin)
 app.post("/treneri/:id/delete", requireRole("admin"), async (req, res) => {
   const trainerId = req.params.id;
 
   try {
-    await db.query("UPDATE sessions SET trainer_id = NULL WHERE trainer_id = ?", [trainerId]);
     await db.query("DELETE FROM trainers WHERE id = ?", [trainerId]);
     res.redirect("/treneri");
   } catch (err) {

@@ -61,6 +61,7 @@ function requireAuth(req, res, next) {
 function requireRole(...roles) {
   return (req, res, next) => {
     if (!req.session.user) {
+      req.session.returnTo = req.originalUrl;
       return res.redirect("/login");
     }
     if (!roles.includes(req.session.user.role)) {
@@ -68,6 +69,19 @@ function requireRole(...roles) {
     }
     next();
   };
+}
+
+// Len bežný používateľ (role: user) môže vytvárať rezervácie.
+function requireCustomer(req, res, next) {
+  if (!req.session.user) {
+    req.session.returnTo = req.originalUrl;
+    return res.redirect("/login");
+  }
+  if (req.session.user.role !== "user") {
+    // Admin/tréner majú správu rezervácií, nie vytváranie.
+    return res.status(403).send("Admin ani tréner nemôžu vytvárať rezervácie.");
+  }
+  next();
 }
 
 // ============================================
@@ -493,7 +507,7 @@ app.post("/treningy/:id/delete", requireRole("admin", "trainer"), async (req, re
 // ============================================
 
 // Rezervačný formulár pre vybraný tréning
-app.get("/rezervacie/new", requireAuth, async (req, res) => {
+app.get("/rezervacie/new", requireCustomer, async (req, res) => {
   const treningId = req.query.treningId;
 
   // Validácia: musí byť zadané ID tréningového kurzu
@@ -518,7 +532,7 @@ app.get("/rezervacie/new", requireAuth, async (req, res) => {
       title: "Nová rezervácia",
       session: trening,
       errors: [],
-      formData: { client_name: "", note: "" }
+      formData: { note: "" }
     });
   } catch (err) {
     console.error("Chyba pri nacitani session pre rezervaciu:", err);
@@ -527,8 +541,8 @@ app.get("/rezervacie/new", requireAuth, async (req, res) => {
 });
 
 // Uloženie novej rezervácie
-app.post("/rezervacie/new", requireAuth, async (req, res) => {
-  const { session_id, client_name, note } = req.body;
+app.post("/rezervacie/new", requireCustomer, async (req, res) => {
+  const { session_id, note } = req.body;
 
   // Validácia pomocou modulu validacia-server
   const errors = validaciaServer.validujNovuRezervaciju(req.body);
@@ -554,16 +568,19 @@ app.post("/rezervacie/new", requireAuth, async (req, res) => {
         title: "Nová rezervácia",
         session,
         errors,
-        formData: { client_name, note }
+        formData: { note }
       });
     }
+
+    // Meno klienta berieme vždy z profilu prihláseného používateľa.
+    const effectiveClientName = req.session.user?.email || "user";
 
     // Vloží novú rezerváciu do databázy
     await db.query(
       "INSERT INTO reservations (session_id, client_name, note, user_id) VALUES (?, ?, ?, ?)",
       [
         Number(session_id),
-        client_name.trim(),
+        effectiveClientName,
         note && note.trim() ? note.trim() : null,
         req.session.user.id
       ]
@@ -579,21 +596,23 @@ app.post("/rezervacie/new", requireAuth, async (req, res) => {
 // Zoznam všetkých rezervácií (s detailmi tréningu)
 app.get("/rezervacie", requireAuth, async (req, res) => {
   try {
-    // Admin môže vidieť všetky, ostatní iba svoje
-    const isAdmin = req.session.user?.role === "admin";
+    // Admin aj tréner môžu vidieť všetky, bežný user iba svoje
+    const isStaff = ["admin", "trainer"].includes(req.session.user?.role);
     let sql =
       `SELECT 
          r.id,
          r.client_name,
          r.note,
          r.created_at,
+         COALESCE(u.email, r.client_name) AS user_email,
          s.title AS session_title,
          s.start_at AS session_start
        FROM reservations r
-       JOIN sessions s ON r.session_id = s.id`;
+       JOIN sessions s ON r.session_id = s.id
+       LEFT JOIN users u ON r.user_id = u.id`;
     const params = [];
 
-    if (!isAdmin) {
+    if (!isStaff) {
       sql += "\n       WHERE r.user_id = ?";
       params.push(req.session.user.id);
     }
@@ -603,7 +622,7 @@ app.get("/rezervacie", requireAuth, async (req, res) => {
     const [rows] = await db.query(sql, params);
 
     res.render("rezervacie", {
-      title: "Moje rezervácie",
+      title: isStaff ? "Rezervácie" : "Moje rezervácie",
       rezervacie: rows,
     });
   } catch (err) {
@@ -617,10 +636,10 @@ app.post("/rezervacie/:id/delete", requireAuth, async (req, res) => {
   const reservationId = req.params.id;
 
   try {
-    // Admin môže mazať všetky, ostatní iba svoje
-    const isAdmin = req.session.user?.role === "admin";
+    // Admin aj tréner môžu mazať všetky, bežný user iba svoje
+    const isStaff = ["admin", "trainer"].includes(req.session.user?.role);
     let result;
-    if (isAdmin) {
+    if (isStaff) {
       [result] = await db.query("DELETE FROM reservations WHERE id = ?", [reservationId]);
     } else {
       [result] = await db.query(

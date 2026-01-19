@@ -27,7 +27,9 @@
                 <% if (isAdmin || isTrainer) { %>
                   <th>Akcie</th>
                 <% } %>
-                <th>Rezervovať</th>
+                <% if (!(isAdmin || isTrainer)) { %>
+                  <th>Rezervovať</th>
+                <% } %>
               </tr>
             </thead>
             <tbody>
@@ -62,11 +64,13 @@
                       </form>
                     </td>
                   <% } %>
-                  <td>
-                    <a href="/rezervacie/new?treningId=<%= s.id %>" class="btn btn-sm btn-info">
-                      <img src="/images/booking.png" alt="Rezervovať" width="20" height="20">
-                    </a>
-                  </td>
+                  <% if (!(isAdmin || isTrainer)) { %>
+                    <td>
+                      <a href="/rezervacie/new?treningId=<%= s.id %>" class="btn btn-sm btn-info">
+                        <img src="/images/booking.png" alt="Rezervovať" width="20" height="20">
+                      </a>
+                    </td>
+                  <% } %>
                 </tr>
               <% }) %>
             </tbody>

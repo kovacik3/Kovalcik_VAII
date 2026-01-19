@@ -3,20 +3,29 @@
 <div class="container my-5">
   <div class="row mb-4">
     <div class="col-12">
-      <h1 class="mb-4">Moje rezervácie</h1>
-      <a href="/treningy" class="btn btn-primary">➕ Nová rezervácia</a>
+      <h1 class="mb-4"><%= (isAdmin || isTrainer) ? "Rezervácie" : "Moje rezervácie" %></h1>
+      <% if (!(isAdmin || isTrainer)) { %>
+        <a href="/treningy" class="btn btn-primary">+ Nová rezervácia</a>
+      <% } %>
     </div>
   </div>
 
   <div class="row">
     <div class="col-12">
       <% if (rezervacie.length === 0) { %>
-        <div class="alert alert-info">Nemáte žiadne rezervácie. <a href="/treningy">Rezervujte si tréning!</a></div>
+        <% if (isAdmin || isTrainer) { %>
+          <div class="alert alert-info">Zatiaľ neexistujú žiadne rezervácie.</div>
+        <% } else { %>
+          <div class="alert alert-info">Nemáte žiadne rezervácie. <a href="/treningy">Rezervujte si tréning!</a></div>
+        <% } %>
       <% } else { %>
         <div class="table-responsive">
           <table class="table table-striped table-hover">
             <thead class="table-dark">
               <tr>
+                <% if (isAdmin || isTrainer) { %>
+                  <th>Používateľ</th>
+                <% } %>
                 <th>Tréning</th>
                 <th>Začiatok</th>
                 <th>Meno klienta</th>
@@ -28,6 +37,9 @@
             <tbody>
               <% rezervacie.forEach(r => { %>
                 <tr>
+                  <% if (isAdmin || isTrainer) { %>
+                    <td><%= r.user_email || r.client_name || "—" %></td>
+                  <% } %>
                   <td><%= r.session_title %></td>
                   <td>
                     <% if (r.session_start) { %>

@@ -110,14 +110,6 @@ function validujNovuRezervaciju(rezervacia) {
         errors.push("Neplatné ID tréningového kurzu");
     }
 
-    // Validácia mena klienta
-    if (!client_name || client_name.trim() === "") {
-        errors.push("Meno klienta je povinné");
-    } else if (client_name.trim().length < 2) {
-        errors.push("Meno klienta musí mať aspoň 2 znaky");
-    } else if (client_name.trim().length > 100) {
-        errors.push("Meno klienta nesmie prekročiť 100 znakov");
-    }
 
     // Validácia poznámky (voliteľne)
     if (note && note.trim().length > 500) {

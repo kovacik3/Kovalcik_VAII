@@ -35,7 +35,13 @@
               </p>
             </div>
             <div class="card-footer bg-white border-top">
-              <a href="/rezervacie/new?treningId=<%= t.id %>" class="btn btn-sm btn-primary w-100">Rezervovať</a>
+              <% if (!(isAdmin || isTrainer)) { %>
+                <a href="/rezervacie/new?treningId=<%= t.id %>" class="btn btn-sm btn-primary w-100">Rezervovať</a>
+              <% } else { %>
+                <button type="button" class="btn btn-sm btn-secondary w-100" disabled>
+                  Rezervácie môže vytvárať len používateľ
+                </button>
+              <% } %>
             </div>
           </div>
         </div>

@@ -28,7 +28,11 @@
           <li class="nav-item"><a class="nav-link" href="/">Domov</a></li>
           <li class="nav-item"><a class="nav-link" href="/treneri">Tréneri</a></li>
           <li class="nav-item"><a class="nav-link" href="/treningy">Tréningy</a></li>
-          <li class="nav-item"><a class="nav-link" href="/rezervacie">Moje rezervácie</a></li>
+          <li class="nav-item">
+            <a class="nav-link" href="/rezervacie">
+              <%= (isAuthenticated && (isAdmin || isTrainer)) ? "Rezervácie" : "Moje rezervácie" %>
+            </a>
+          </li>
           <% if (isAuthenticated) { %>
             <li class="nav-item d-flex align-items-center ms-2">
               <span class="badge bg-info text-dark"><%= currentUser.role %></span>

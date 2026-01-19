@@ -108,7 +108,7 @@ app.post("/login", async (req, res) => {
   if (errors.length === 0) {
     try {
       const [rows] = await db.query(
-        "SELECT id, email, password_hash, role FROM users WHERE email = ?",
+        "SELECT id, email, username, password_hash, role FROM users WHERE email = ?",
         [email]
       );
 
@@ -120,7 +120,12 @@ app.post("/login", async (req, res) => {
         if (!ok) {
           errors.push("Nesprávne prihlasovacie údaje.");
         } else {
-          req.session.user = { id: user.id, email: user.email, role: user.role };
+          req.session.user = {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            username: user.username,
+          };
           const returnTo = req.session.returnTo;
           delete req.session.returnTo;
           return res.redirect(returnTo || "/");
@@ -572,8 +577,8 @@ app.post("/rezervacie/new", requireCustomer, async (req, res) => {
       });
     }
 
-    // Meno klienta berieme vždy z profilu prihláseného používateľa.
-    const effectiveClientName = req.session.user?.email || "user";
+    // Meno klienta berieme vždy z profilu prihláseného používateľa (username).
+    const effectiveClientName = req.session.user.username;
 
     // Vloží novú rezerváciu do databázy
     await db.query(
@@ -604,14 +609,14 @@ app.get("/rezervacie", requireAuth, async (req, res) => {
          r.client_name,
          r.note,
          r.created_at,
-         COALESCE(u.email, r.client_name) AS user_email,
+         u.email AS user_email,
+         u.username AS client_username,
          s.title AS session_title,
          s.start_at AS session_start
        FROM reservations r
        JOIN sessions s ON r.session_id = s.id
        LEFT JOIN users u ON r.user_id = u.id`;
     const params = [];
-
     if (!isStaff) {
       sql += "\n       WHERE r.user_id = ?";
       params.push(req.session.user.id);
@@ -660,6 +665,30 @@ app.post("/rezervacie/:id/delete", requireAuth, async (req, res) => {
 
 
 // ============================================
+// AUTOMATICKÁ ÚDRŽBA DÁT
+// ============================================
+
+/**
+ * Automaticky zmaže tréningy, ktoré už skončili (end_at < NOW())
+ * Pozn.: V produkcii je lepší cron/worker, ale na semestrálku je toto OK.
+ */
+async function cleanupExpiredSessions() {
+  try {
+    const [resSessions] = await db.query(
+      `DELETE FROM sessions
+       WHERE end_at IS NOT NULL AND end_at < NOW()`
+    );
+    const deletedSessions = resSessions?.affectedRows || 0;
+    if (deletedSessions > 0) {
+      console.log(`[cleanup] Deleted expired sessions: ${deletedSessions} (reservations deleted via CASCADE)`);
+    }
+  } catch (err) {
+    console.error("[cleanup] Chyba pri automatickom mazaní skončených tréningov:", err);
+  }
+}
+
+
+// ============================================
 // SPUSTENIE SERVERA
 // ============================================
 
@@ -668,4 +697,8 @@ app.post("/rezervacie/:id/delete", requireAuth, async (req, res) => {
  */
 app.listen(PORT, () => {
   console.log(`Server beží na http://localhost:${PORT}`);
+
+  // Spustíme hneď po štarte + pravidelne (každú hodinu)
+  cleanupExpiredSessions();
+  setInterval(cleanupExpiredSessions, 60 * 60 * 1000);
 });

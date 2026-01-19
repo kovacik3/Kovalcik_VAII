@@ -7,7 +7,7 @@ Používateľ si vie pozrieť ponuku tréningov, trénerov a vytvoriť rezervác
 
 ## Inicializácia databázy a seedovanie užívateľov
 
-- Vytvor `.env` v root priečinku so základnými premennými: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` a `SESSION_SECRET`, plus predvolené účty (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, `TRAINER_EMAIL`, `TRAINER_PASSWORD`, `USER_ONE_EMAIL`, `USER_ONE_PASSWORD`, `USER_TWO_EMAIL`, `USER_TWO_PASSWORD`).
+- Vytvor `.env` v root priečinku so základnými premennými: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `SESSION_SECRET`, a predvolenými účtami vrátane všetkých potrebných údajov: `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `TRAINER_EMAIL`, `TRAINER_USERNAME`, `TRAINER_PASSWORD`, `USER_ONE_EMAIL`, `USER_ONE_USERNAME`, `USER_ONE_PASSWORD`, `USER_TWO_EMAIL`, `USER_TWO_USERNAME`, `USER_TWO_PASSWORD`.
 - Nainštaluj závislosti cez `npm install`.
 - Spusti `npm run seed` na vloženie (alebo aktualizáciu) admina, trénera a dvoch bežných užívateľov (`user1` a `user2`). Skript zmení heslá pre existujúce e-maily a vypíše výsledky v konzole.
 - Po úspešnom seedovaní sa môžeš prihlásiť pomocou štandardných účtov:
@@ -111,17 +111,20 @@ Ak chceš experimentovať s inými prihlasovacími údajmi, zmeň hodnoty v `.en
 ### Rezervácie
 
 - `GET /rezervacie`
-  - zoznam všetkých rezervácií (join s tréningom)
+  - zoznam rezervácií (join s tréningom)
+  - **user** vidí iba svoje rezervácie
+  - **admin/trainer** vidí všetky rezervácie
 
 - `GET /rezervacie/new?treningId=:id`
   - formulár na vytvorenie rezervácie na konkrétny tréning
+  - dostupné iba pre rolu **user** (admin/trainer nemôžu vytvárať rezervácie)
 
 - `POST /rezervacie/new`
   - vytvorí rezerváciu
   - validácia na serveri:
     - session_id (povinné, číslo, musí existovať v tabuľke `sessions`)
-    - meno klienta (dĺžka)
     - poznámka (max. dĺžka, voliteľná)
+  - "meno klienta" sa **nezadáva** vo formulári – server ho berie z profilu prihláseného používateľa (preferuje `username`, fallback na e-mail)
 
 - `POST /rezervacie/:id/delete`
   - zmaže rezerváciu

@@ -28,7 +28,7 @@
                 <% } %>
                 <th>Tréning</th>
                 <th>Začiatok</th>
-                <th>Meno klienta</th>
+                <th>Meno klienta (username)</th>
                 <th>Poznámka</th>
                 <th>Vytvorené</th>
                 <th>Akcie</th>
@@ -38,7 +38,7 @@
               <% rezervacie.forEach(r => { %>
                 <tr>
                   <% if (isAdmin || isTrainer) { %>
-                    <td><%= r.user_email || r.client_name || "—" %></td>
+                    <td><%= r.user_email || "—" %></td>
                   <% } %>
                   <td><%= r.session_title %></td>
                   <td>
@@ -48,7 +48,7 @@
                       —
                     <% } %>
                   </td>
-                  <td><%= r.client_name %></td>
+                  <td><%= r.client_username || r.client_name || "—" %></td>
                   <td><%= r.note || "—" %></td>
                   <td>
                     <% if (r.created_at) { %>

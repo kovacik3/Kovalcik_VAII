@@ -1,4 +1,4 @@
-<%- include("partials/header", { title: title }) %>
+<%- include("partials/header") %>
 
 <div class="container my-5">
   <div class="row mb-4">
@@ -37,6 +37,7 @@
                         <img src="/images/editing.png" alt="Upraviť" width="20" height="20">
                       </a>
                       <form action="/treneri/<%= trener.id %>/delete" method="POST" style="display:inline;">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Naozaj zmazať tohto trénera?');">
                           <img src="/images/delete.png" alt="Zmazať" width="20" height="20">
                         </button>

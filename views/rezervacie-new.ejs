@@ -1,4 +1,4 @@
-<%- include("partials/header", { title: title }) %>
+<%- include("partials/header") %>
 
 <div class="container my-5">
   <div class="row justify-content-center">
@@ -29,6 +29,7 @@
       <% } %>
 
       <form action="/rezervacie/new" method="POST" class="js-validate" novalidate>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <input type="hidden" name="session_id" value="<%= session.id %>" />
 
         <!-- Meno klienta sa berie z profilu prihláseného používateľa na serveri (session). -->

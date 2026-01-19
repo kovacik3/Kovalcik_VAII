@@ -11,6 +11,9 @@ const path = require("path");
 const session = require("express-session");
 // bcrypt: bezpečné ukladanie a porovnávanie hesiel
 const bcrypt = require("bcrypt");
+// CSRF ochrana a rate limit na login
+const csrf = require("csurf");
+const rateLimit = require("express-rate-limit");
 // db: pripojenie do MySQL
 const db = require("./db");
 // validácia vstupov pre formuláre
@@ -38,13 +41,26 @@ app.use(session({
   saveUninitialized: false,
 }));
 
-// Do EJS šablón posielame info o prihlásenom (kvôli skrytiu/zobrazeniu tlačidiel)
+// CSRF ochrana – musí byť po sessions a body parsingu
+app.use(csrf());
+
+// CSRF token a user info do šablón
 app.use((req, res, next) => {
+  res.locals.csrfToken = req.csrfToken();
   res.locals.currentUser = req.session.user || null;
   res.locals.isAuthenticated = !!req.session.user;
   res.locals.isAdmin = req.session.user?.role === "admin";
   res.locals.isTrainer = req.session.user?.role === "trainer";
   next();
+});
+
+// Rate limit pre login pokusy (IP-based)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: "Príliš veľa pokusov o prihlásenie. Skúste znova o 15 minút.",
 });
 
 // Ak nie si prihlásený, pošleme ťa na /login
@@ -97,7 +113,7 @@ app.get("/login", (req, res) => {
 });
 
 // Spracovanie prihlásenia: nájdeme usera podľa emailu, porovnáme heslo cez bcrypt
-app.post("/login", async (req, res) => {
+app.post("/login", loginLimiter, async (req, res) => {
   const { email, password } = req.body;
   const errors = [];
 
@@ -577,6 +593,21 @@ app.post("/rezervacie/new", requireCustomer, async (req, res) => {
       });
     }
 
+    // Kontrola: používateľ už má rezerváciu na tento tréning?
+    const [dupe] = await db.query(
+      "SELECT id FROM reservations WHERE session_id = ? AND user_id = ? LIMIT 1",
+      [Number(session_id), req.session.user.id]
+    );
+    if (dupe.length > 0) {
+      errors.push("Už máš rezerváciu na tento tréning.");
+      return res.render("rezervacie-new", {
+        title: "Nová rezervácia",
+        session,
+        errors,
+        formData: { note }
+      });
+    }
+
     // Meno klienta berieme vždy z profilu prihláseného používateľa (username).
     const effectiveClientName = req.session.user.username;
 
@@ -701,4 +732,13 @@ app.listen(PORT, () => {
   // Spustíme hneď po štarte + pravidelne (každú hodinu)
   cleanupExpiredSessions();
   setInterval(cleanupExpiredSessions, 60 * 60 * 1000);
+});
+
+// CSRF error handler (user-friendly 403)
+app.use((err, req, res, next) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    console.error('CSRF token error:', err);
+    return res.status(403).send('Neplatný alebo chýbajúci CSRF token. Skús to znova.');
+  }
+  next(err);
 });

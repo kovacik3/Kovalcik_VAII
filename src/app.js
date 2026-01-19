@@ -50,6 +50,8 @@ app.use((req, res, next) => {
 // Ak nie si prihlásený, pošleme ťa na /login
 function requireAuth(req, res, next) {
   if (!req.session.user) {
+    // Zapamätáme si, kam sa user chcel dostať (napr. /rezervacie/new?treningId=...)
+    req.session.returnTo = req.originalUrl;
     return res.redirect("/login");
   }
   next();
@@ -105,7 +107,9 @@ app.post("/login", async (req, res) => {
           errors.push("Nesprávne prihlasovacie údaje.");
         } else {
           req.session.user = { id: user.id, email: user.email, role: user.role };
-          return res.redirect("/");
+          const returnTo = req.session.returnTo;
+          delete req.session.returnTo;
+          return res.redirect(returnTo || "/");
         }
       }
     } catch (err) {
@@ -489,7 +493,7 @@ app.post("/treningy/:id/delete", requireRole("admin", "trainer"), async (req, re
 // ============================================
 
 // Rezervačný formulár pre vybraný tréning
-app.get("/rezervacie/new", async (req, res) => {
+app.get("/rezervacie/new", requireAuth, async (req, res) => {
   const treningId = req.query.treningId;
 
   // Validácia: musí byť zadané ID tréningového kurzu
@@ -523,7 +527,7 @@ app.get("/rezervacie/new", async (req, res) => {
 });
 
 // Uloženie novej rezervácie
-app.post("/rezervacie/new", async (req, res) => {
+app.post("/rezervacie/new", requireAuth, async (req, res) => {
   const { session_id, client_name, note } = req.body;
 
   // Validácia pomocou modulu validacia-server
@@ -556,11 +560,12 @@ app.post("/rezervacie/new", async (req, res) => {
 
     // Vloží novú rezerváciu do databázy
     await db.query(
-      "INSERT INTO reservations (session_id, client_name, note) VALUES (?, ?, ?)",
+      "INSERT INTO reservations (session_id, client_name, note, user_id) VALUES (?, ?, ?, ?)",
       [
         Number(session_id),
         client_name.trim(),
-        note && note.trim() ? note.trim() : null
+        note && note.trim() ? note.trim() : null,
+        req.session.user.id
       ]
     );
 
@@ -572,10 +577,11 @@ app.post("/rezervacie/new", async (req, res) => {
 });
 
 // Zoznam všetkých rezervácií (s detailmi tréningu)
-app.get("/rezervacie", async (req, res) => {
+app.get("/rezervacie", requireAuth, async (req, res) => {
   try {
-    // SQL JOIN pre spojenie rezervácií s tréningi a ich informáciami
-    const [rows] = await db.query(
+    // Admin môže vidieť všetky, ostatní iba svoje
+    const isAdmin = req.session.user?.role === "admin";
+    let sql =
       `SELECT 
          r.id,
          r.client_name,
@@ -584,9 +590,17 @@ app.get("/rezervacie", async (req, res) => {
          s.title AS session_title,
          s.start_at AS session_start
        FROM reservations r
-       JOIN sessions s ON r.session_id = s.id
-       ORDER BY r.created_at DESC`
-    );
+       JOIN sessions s ON r.session_id = s.id`;
+    const params = [];
+
+    if (!isAdmin) {
+      sql += "\n       WHERE r.user_id = ?";
+      params.push(req.session.user.id);
+    }
+
+    sql += "\n       ORDER BY r.created_at DESC";
+
+    const [rows] = await db.query(sql, params);
 
     res.render("rezervacie", {
       title: "Moje rezervácie",
@@ -599,12 +613,25 @@ app.get("/rezervacie", async (req, res) => {
 });
 
 // Vymazanie rezervácie
-app.post("/rezervacie/:id/delete", async (req, res) => {
+app.post("/rezervacie/:id/delete", requireAuth, async (req, res) => {
   const reservationId = req.params.id;
 
   try {
-    // Vymaž rezerváciu z databázy
-    await db.query("DELETE FROM reservations WHERE id = ?", [reservationId]);
+    // Admin môže mazať všetky, ostatní iba svoje
+    const isAdmin = req.session.user?.role === "admin";
+    let result;
+    if (isAdmin) {
+      [result] = await db.query("DELETE FROM reservations WHERE id = ?", [reservationId]);
+    } else {
+      [result] = await db.query(
+        "DELETE FROM reservations WHERE id = ? AND user_id = ?",
+        [reservationId, req.session.user.id]
+      );
+    }
+
+    if (!result || result.affectedRows === 0) {
+      return res.status(404).send("Rezervácia nenájdená alebo nemáš oprávnenie.");
+    }
     res.redirect("/rezervacie");
   } catch (err) {
     console.error("Chyba pri mazani rezervacie:", err);

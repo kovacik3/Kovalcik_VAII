@@ -5,6 +5,19 @@ Používateľ si vie pozrieť ponuku tréningov, trénerov a vytvoriť rezervác
 
 ---
 
+## Inicializácia databázy a seedovanie užívateľov
+
+- Vytvor `.env` v root priečinku so základnými premennými: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` a `SESSION_SECRET`, plus predvolené účty (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, `TRAINER_EMAIL`, `TRAINER_PASSWORD`, `USER_ONE_EMAIL`, `USER_ONE_PASSWORD`, `USER_TWO_EMAIL`, `USER_TWO_PASSWORD`).
+- Nainštaluj závislosti cez `npm install`.
+- Spusti `npm run seed` na vloženie (alebo aktualizáciu) admina, trénera a dvoch bežných užívateľov (`user1` a `user2`). Skript zmení heslá pre existujúce e-maily a vypíše výsledky v konzole.
+- Po úspešnom seedovaní sa môžeš prihlásiť pomocou štandardných účtov:
+  - **admin:** admin@gym.local / admin123 (`role: admin`)
+  - **trainer:** trainer@gym.local / trainer123 (`role: trainer`)
+  - **user1:** user1@gym.local / userone123 (`role: user`)
+  - **user2:** user2@gym.local / usertwo123 (`role: user`)
+
+Ak chceš experimentovať s inými prihlasovacími údajmi, zmeň hodnoty v `.env` a znovu spusti `npm run seed`.
+
 ## Použité technológie
 
 - **Backend:** Node.js, Express

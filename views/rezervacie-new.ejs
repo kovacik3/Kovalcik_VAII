@@ -31,17 +31,7 @@
       <form action="/rezervacie/new" method="POST" class="js-validate" novalidate>
         <input type="hidden" name="session_id" value="<%= session.id %>" />
 
-        <div class="mb-3">
-          <label for="client_name" class="form-label">Meno klienta</label>
-          <input
-            type="text"
-            class="form-control"
-            id="client_name"
-            name="client_name"
-            value="<%= formData && formData.client_name ? formData.client_name : '' %>"
-            required
-          />
-        </div>
+
 
         <div class="mb-3">
           <label for="note" class="form-label">Poznámka (nepovinné)</label>

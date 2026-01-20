@@ -5,7 +5,10 @@
     <div class="col-12">
       <h1 class="mb-4">Tréningy (sessions)</h1>
       <% if (isAdmin || isTrainer) { %>
-        <a href="/treningy/new" class="btn btn-success"><i class="fa-solid fa-plus"></i></i> Pridať tréning</a>
+        <a href="/treningy/new" class="btn btn-success">
+          <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>
+          Pridať tréning
+        </a>
       <% } %>
     </div>
   </div>
@@ -54,21 +57,21 @@
                   <td><%= s.trainer_name || "—" %></td>
                   <% if (isAdmin || isTrainer) { %>
                     <td>
-                      <a href="/treningy/<%= s.id %>/edit" class="btn btn-sm btn-warning">
-                        <img src="/images/editing.png" alt="Upraviť" width="20" height="20">
+                      <a href="/treningy/<%= s.id %>/edit" class="btn btn-sm btn-warning" aria-label="Upraviť">
+                        <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                       </a>
                        <form action="/treningy/<%= s.id %>/delete" method="POST" style="display:inline;">
                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                          <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Naozaj zmazať tento tréning?');">
-                           <img src="/images/delete.png" alt="Zmazať" width="20" height="20">
+                           <i class="fa-solid fa-trash" aria-hidden="true"></i>
                          </button>
                        </form>
                     </td>
                   <% } %>
                   <% if (!(isAdmin || isTrainer)) { %>
                     <td>
-                      <a href="/rezervacie/new?treningId=<%= s.id %>" class="btn btn-sm btn-info">
-                        <img src="/images/booking.png" alt="Rezervovať" width="20" height="20">
+                      <a href="/rezervacie/new?treningId=<%= s.id %>" class="btn btn-sm btn-info" aria-label="Rezervovať">
+                        <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
                       </a>
                     </td>
                   <% } %>

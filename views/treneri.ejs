@@ -33,13 +33,13 @@
                   <td><%= trener.specialization %></td>
                   <% if (isAdmin) { %>
                     <td>
-                      <a href="/treneri/<%= trener.id %>/edit" class="btn btn-sm btn-warning">
-                        <img src="/images/editing.png" alt="Upraviť" width="20" height="20">
+                      <a href="/treneri/<%= trener.id %>/edit" class="btn btn-sm btn-warning" aria-label="Upraviť">
+                        <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                       </a>
                       <form action="/treneri/<%= trener.id %>/delete" method="POST" style="display:inline;">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Naozaj zmazať tohto trénera?');">
-                          <img src="/images/delete.png" alt="Zmazať" width="20" height="20">
+                          <i class="fa-solid fa-trash" aria-hidden="true"></i>
                         </button>
                       </form>
                     </td>

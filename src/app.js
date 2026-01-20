@@ -19,11 +19,10 @@ const trainersRoutes = require("./routes/trainersRoutes");
 const trainingsRoutes = require("./routes/trainingsRoutes");
 const reservationsRoutes = require("./routes/reservationsRoutes");
 
-const { scheduleCleanup } = require("./services/cleanupService");
+const sessionConfig = require("./config/session");
 
-// Tu sa vytvorí Express aplikácia a nastaví port
+// Tu sa vytvorí Express aplikácia
 const app = express();
-const PORT = 3000;
 
 // Konfigurácia template engine (EJS) pre vykresľovanie HTML stránok
 app.set("view engine", "ejs");
@@ -37,11 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Sessions: uloží info o prihlásenom užívateľovi na serveri,
 // prehliadač má len cookie s identifikátorom
-app.use(session({
-  secret: process.env.SESSION_SECRET || "dev-session-secret-change-me",
-  resave: false,
-  saveUninitialized: false,
-}));
+app.use(session(sessionConfig));
 
 // CSRF ochrana – musí byť po sessions a body parsingu
 app.use(csrf());
@@ -56,17 +51,7 @@ app.use(trainingsRoutes);
 app.use(reservationsRoutes);
 
 
-// ============================================
-// SPUSTENIE SERVERA
-// ============================================
-
 // CSRF error handler (user-friendly 403)
 app.use(csrfErrorHandler);
 
-/**
- * Spustí Express server na zadanom porte
- */
-app.listen(PORT, () => {
-  console.log(`Server beží na http://localhost:${PORT}`);
-  scheduleCleanup();
-});
+module.exports = app;

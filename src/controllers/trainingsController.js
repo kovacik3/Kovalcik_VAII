@@ -1,6 +1,6 @@
 const sessionModel = require("../models/sessionModel");
 const trainerModel = require("../models/trainerModel");
-const validaciaServer = require("../validacia-server");
+const { validateTraining } = require("../validators");
 const { datetimeLocalToMySql, datetimeLocalToDate } = require("../utils/datetime");
 
 async function newForm(req, res) {
@@ -20,7 +20,7 @@ async function newForm(req, res) {
 
 async function create(req, res) {
   const { title, start_at, end_at, capacity, trainer_id } = req.body;
-  const errors = validaciaServer.validujNovyTrening(req.body);
+  const errors = validateTraining(req.body);
 
   const formData = { title, start_at, end_at, capacity, trainer_id };
   if (errors.length > 0) {
@@ -92,7 +92,7 @@ async function editForm(req, res) {
 async function update(req, res) {
   const treningId = req.params.id;
   const { title, start_at, end_at, capacity, trainer_id } = req.body;
-  const errors = validaciaServer.validujNovyTrening(req.body);
+  const errors = validateTraining(req.body);
 
   if (errors.length > 0) {
     try {

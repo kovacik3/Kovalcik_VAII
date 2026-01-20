@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const userModel = require("../models/userModel");
-const validaciaServer = require("../validacia-server");
+const { validateRegistration } = require("../validators");
 
 async function getLogin(req, res) {
   if (req.session.user) {
@@ -73,7 +73,7 @@ async function postRegister(req, res) {
   }
 
   const { first_name, last_name, email, password } = req.body;
-  const errors = validaciaServer.validujRegistraciu({ first_name, last_name, email, password });
+  const errors = validateRegistration({ first_name, last_name, email, password });
 
   if (errors.length === 0) {
     try {

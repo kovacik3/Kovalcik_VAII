@@ -1,5 +1,5 @@
 const trainerModel = require("../models/trainerModel");
-const validaciaServer = require("../validacia-server");
+const { validateTrainer } = require("../validators");
 
 async function list(req, res) {
   try {
@@ -24,7 +24,7 @@ async function newForm(req, res) {
 
 async function create(req, res) {
   const { name, specialization } = req.body;
-  const errors = validaciaServer.validujNovehoTrenera(req.body);
+  const errors = validateTrainer(req.body);
 
   if (errors.length > 0) {
     return res.render("treneri-new", {
@@ -64,7 +64,7 @@ async function editForm(req, res) {
 async function update(req, res) {
   const trainerId = req.params.id;
   const { name, specialization } = req.body;
-  const errors = validaciaServer.validujNovehoTrenera(req.body);
+  const errors = validateTrainer(req.body);
 
   if (errors.length > 0) {
     return res.render("treneri-edit", {

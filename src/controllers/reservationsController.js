@@ -1,6 +1,6 @@
 const reservationModel = require("../models/reservationModel");
 const sessionModel = require("../models/sessionModel");
-const validaciaServer = require("../validacia-server");
+const { validateReservation } = require("../validators");
 
 async function newForm(req, res) {
   const treningId = req.query.treningId;
@@ -28,7 +28,7 @@ async function newForm(req, res) {
 
 async function create(req, res) {
   const { session_id, note } = req.body;
-  const errors = validaciaServer.validujNovuRezervaciju(req.body);
+  const errors = validateReservation(req.body);
 
   let session = null;
 

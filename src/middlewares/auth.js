@@ -1,4 +1,4 @@
-// Auth / authorization middlewares (previously inline in app.js)
+// Auth / authorization middlewares
 
 function requireAuth(req, res, next) {
   if (!req.session.user) {

@@ -214,8 +214,15 @@ app.post("/register", async (req, res) => {
       const passwordHash = await bcrypt.hash(password, 10);
 
       const [result] = await db.query(
-        "INSERT INTO users (email, username, password_hash, role) VALUES (?, ?, ?, ?)",
-        [email.trim(), username || email.trim(), passwordHash, "user"]
+        "INSERT INTO users (email, username, first_name, last_name, password_hash, role) VALUES (?, ?, ?, ?, ?, ?)",
+        [
+          email.trim(),
+          username || email.trim(),
+          normalizedFirst,
+          normalizedLast,
+          passwordHash,
+          "user",
+        ]
       );
 
       // Ulož používateľa do session a presmeruj na domov / returnTo

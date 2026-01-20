@@ -112,8 +112,9 @@ function validujNovuRezervaciju(rezervacia) {
 
 
     // Validácia poznámky (voliteľne)
-    if (note && note.trim().length > 500) {
-        errors.push("Poznámka nesmie prekročiť 500 znakov");
+    // Pozn.: V DB je `note` nastavené ako VARCHAR(255), preto validujeme max 255.
+    if (note && note.trim().length > 255) {
+        errors.push("Poznámka nesmie prekročiť 255 znakov");
     }
 
     return errors;

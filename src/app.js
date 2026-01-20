@@ -61,6 +61,14 @@ const loginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: "Príliš veľa pokusov o prihlásenie. Skúste znova o 15 minút.",
+  handler: (req, res, _next, options) => {
+    // Pri prekročení limitu vráťme peknú login stránku s chybou
+    return res.status(options.statusCode || 429).render("login", {
+      title: "Prihlásenie",
+      errors: [options.message || "Príliš veľa pokusov o prihlásenie. Skúste znova o 15 minút."],
+      formData: { email: req.body?.email || "" },
+    });
+  },
 });
 
 // Ak nie si prihlásený, pošleme ťa na /login
@@ -159,6 +167,78 @@ app.post("/login", loginLimiter, async (req, res) => {
 app.post("/logout", (req, res) => {
   req.session.destroy(() => {
     res.redirect("/login");
+  });
+});
+
+// Formulár na registráciu – prístupný len neprihláseným
+app.get("/register", (req, res) => {
+  if (req.session.user) {
+    return res.redirect("/");
+  }
+
+  res.render("register", {
+    title: "Registrácia",
+    errors: [],
+    formData: {},
+  });
+});
+
+// Spracovanie registrácie nového používateľa
+app.post("/register", async (req, res) => {
+  if (req.session.user) {
+    return res.redirect("/");
+  }
+
+  const { first_name, last_name, email, password } = req.body;
+  const errors = validaciaServer.validujRegistraciu({ first_name, last_name, email, password });
+
+  // Skontroluj, či email už existuje
+  if (errors.length === 0) {
+    try {
+      const [existing] = await db.query("SELECT id FROM users WHERE email = ? LIMIT 1", [email]);
+      if (existing.length > 0) {
+        errors.push("Používateľ s týmto e-mailom už existuje.");
+      }
+    } catch (err) {
+      console.error("Chyba pri kontrole existujúceho emailu:", err);
+      errors.push("Chyba servera pri overovaní e-mailu.");
+    }
+  }
+
+  if (errors.length === 0) {
+    try {
+      const normalizedFirst = (first_name || "").trim();
+      const normalizedLast = (last_name || "").trim();
+      const username = [normalizedFirst, normalizedLast].filter(Boolean).join(" ");
+
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      const [result] = await db.query(
+        "INSERT INTO users (email, username, password_hash, role) VALUES (?, ?, ?, ?)",
+        [email.trim(), username || email.trim(), passwordHash, "user"]
+      );
+
+      // Ulož používateľa do session a presmeruj na domov / returnTo
+      req.session.user = {
+        id: result.insertId,
+        email: email.trim(),
+        role: "user",
+        username: username || email.trim(),
+      };
+
+      const returnTo = req.session.returnTo;
+      delete req.session.returnTo;
+      return res.redirect(returnTo || "/");
+    } catch (err) {
+      console.error("Chyba pri registrácii používateľa:", err);
+      errors.push("Chyba servera pri registrácii. Skúste to znova neskôr.");
+    }
+  }
+
+  res.render("register", {
+    title: "Registrácia",
+    errors,
+    formData: { first_name, last_name, email },
   });
 });
 

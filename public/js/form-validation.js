@@ -22,6 +22,31 @@ function initFormValidation() {
         }
       }
 
+      // extra kontrola: meno a priezvisko pri registrácii (ak existujú)
+      const firstNameInput = form.querySelector('input[name="first_name"]');
+      if (firstNameInput) {
+        const value = firstNameInput.value.trim();
+        if (value.length === 0) {
+          firstNameInput.setCustomValidity("Meno je povinné.");
+          valid = false;
+        } else if (value.length < 2) {
+          firstNameInput.setCustomValidity("Meno musí mať aspoň 2 znaky.");
+          valid = false;
+        }
+      }
+
+      const lastNameInput = form.querySelector('input[name="last_name"]');
+      if (lastNameInput) {
+        const value = lastNameInput.value.trim();
+        if (value.length === 0) {
+          lastNameInput.setCustomValidity("Priezvisko je povinné.");
+          valid = false;
+        } else if (value.length < 2) {
+          lastNameInput.setCustomValidity("Priezvisko musí mať aspoň 2 znaky.");
+          valid = false;
+        }
+      }
+
       // extra kontrola: kapacita (ak existuje)
       const capacityInput = form.querySelector('input[name="capacity"]');
       if (capacityInput) {

@@ -5,7 +5,7 @@
     <div class="col-12">
       <h1 class="mb-4"><%= (isAdmin || isTrainer) ? "Rezervácie" : "Moje rezervácie" %></h1>
       <% if (!(isAdmin || isTrainer)) { %>
-        <a href="/treningy" class="btn btn-primary"><i class="fa-solid fa-circle-plus"></i> Nová rezervácia</a>
+        <a href="/treningy" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nová rezervácia</a>
       <% } %>
     </div>
   </div>

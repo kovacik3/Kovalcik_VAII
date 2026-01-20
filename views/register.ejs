@@ -1,0 +1,84 @@
+<%- include("partials/header") %>
+
+<div class="container my-5" style="max-width: 640px;">
+  <h1 class="mb-4">Registrácia</h1>
+
+  <% if (errors && errors.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <strong>Chyby pri registrácii:</strong>
+      <ul class="mb-0 mt-2">
+        <% errors.forEach(e => { %>
+          <li><%= e %></li>
+        <% }) %>
+      </ul>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+
+  <form action="/register" method="POST" class="js-validate" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label for="first_name" class="form-label">Meno</label>
+        <input
+          type="text"
+          class="form-control"
+          id="first_name"
+          name="first_name"
+          value="<%= formData?.first_name || '' %>"
+          required
+        />
+      </div>
+      <div class="col-md-6">
+        <label for="last_name" class="form-label">Priezvisko</label>
+        <input
+          type="text"
+          class="form-control"
+          id="last_name"
+          name="last_name"
+          value="<%= formData?.last_name || '' %>"
+          required
+        />
+      </div>
+    </div>
+
+    <div class="mt-3 mb-3">
+      <label for="email" class="form-label">E-mail</label>
+      <input
+        type="email"
+        class="form-control"
+        id="email"
+        name="email"
+        value="<%= formData?.email || '' %>"
+        required
+      />
+    </div>
+
+    <div class="mb-4">
+      <label for="password" class="form-label">Heslo</label>
+      <input
+        type="password"
+        class="form-control"
+        id="password"
+        name="password"
+        minlength="8"
+        required
+      />
+      <small class="text-muted">Minimálne 8 znakov.</small>
+    </div>
+
+    <div class="d-grid gap-2 d-sm-flex justify-content-sm-start">
+      <button type="submit" class="btn btn-success">
+        <i class="fa-solid fa-user-plus me-2" aria-hidden="true"></i>
+        Zaregistrovať sa
+      </button>
+      <a href="/login" class="btn btn-secondary">
+        <i class="fa-solid fa-arrow-left me-2" aria-hidden="true"></i>
+        Späť na prihlásenie
+      </a>
+    </div>
+  </form>
+</div>
+
+<%- include("partials/footer") %>

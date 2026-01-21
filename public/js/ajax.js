@@ -150,9 +150,6 @@
             badge.textContent = data.role;
             badge.className = "badge js-user-role-badge " + badgeClassForRole(data.role);
           }
-
-          // small inline feedback
-          showInlineSaved(form);
         } catch (err) {
           console.error("AJAX update role failed:", err);
           alert("Chyba pri ukladaní roly.");
@@ -167,23 +164,5 @@
     if (role === "admin") return "bg-danger";
     if (role === "trainer") return "bg-info text-dark";
     return "bg-secondary";
-  }
-
-  function showInlineSaved(form) {
-    const existing = form.querySelector(".js-saved-hint");
-    if (existing) existing.remove();
-
-    const hint = document.createElement("div");
-    hint.className = "form-text text-success js-saved-hint";
-    hint.textContent = "Uložené.";
-    form.appendChild(hint);
-
-    setTimeout(() => {
-      try {
-        hint.remove();
-      } catch (_) {
-        // ignore
-      }
-    }, 1500);
   }
 })();

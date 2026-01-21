@@ -98,7 +98,31 @@ async function updateRoleAjax(req, res) {
   }
 
   try {
-    await userModel.updateRole(targetUserId, newRole);
+    const target = await userModel.getById(targetUserId);
+    if (!target) {
+      return res.status(404).json({ success: false, error: "Používateľ neexistuje." });
+    }
+
+    if ((target.role || "").toString() === newRole) {
+      return res.status(409).json({
+        success: false,
+        error: "Používateľ už má nastavenú túto rolu.",
+      });
+    }
+
+    const affected = await userModel.updateRole(targetUserId, newRole);
+    if (!affected) {
+      return res.status(500).json({
+        success: false,
+        error: "Rolu sa nepodarilo uložiť (nebola vykonaná žiadna zmena).",
+      });
+    }
+
+    // Ak admin upraví sám seba, udržíme session konzistentnú
+    if (req.session.user?.id && Number(req.session.user.id) === targetUserId) {
+      req.session.user.role = newRole;
+    }
+
     return res.json({ success: true, role: newRole });
   } catch (err) {
     console.error("Chyba pri AJAX update role:", err);

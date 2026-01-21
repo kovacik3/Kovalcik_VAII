@@ -72,8 +72,8 @@ async function postRegister(req, res) {
     return res.redirect("/");
   }
 
-  const { first_name, last_name, email, password } = req.body;
-  const errors = validateRegistration({ first_name, last_name, email, password });
+  const { first_name, last_name, username, email, password } = req.body;
+  const errors = validateRegistration({ first_name, last_name, username, email, password });
 
   if (errors.length === 0) {
     try {
@@ -91,13 +91,13 @@ async function postRegister(req, res) {
     try {
       const normalizedFirst = (first_name || "").trim();
       const normalizedLast = (last_name || "").trim();
-      const username = [normalizedFirst, normalizedLast].filter(Boolean).join(" ");
+      const normalizedUsername = (username || "").trim();
 
       const passwordHash = await bcrypt.hash(password, 10);
 
       const userId = await userModel.createUser({
         email: email.trim(),
-        username: username || email.trim(),
+        username: normalizedUsername,
         first_name: normalizedFirst,
         last_name: normalizedLast,
         password_hash: passwordHash,
@@ -108,7 +108,7 @@ async function postRegister(req, res) {
         id: userId,
         email: email.trim(),
         role: "user",
-        username: username || email.trim(),
+        username: normalizedUsername,
       };
 
       const returnTo = req.session.returnTo;
@@ -123,7 +123,7 @@ async function postRegister(req, res) {
   res.render("register", {
     title: "Registrácia",
     errors,
-    formData: { first_name, last_name, email },
+    formData: { first_name, last_name, username, email },
   });
 }
 

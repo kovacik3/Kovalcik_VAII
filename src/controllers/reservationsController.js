@@ -64,6 +64,20 @@ async function create(req, res) {
       });
     }
 
+    const capacity = Number(session?.capacity);
+    if (Number.isFinite(capacity) && capacity > 0) {
+      const reservedCount = await reservationModel.countForSession(sessionIdParsed);
+      if (reservedCount >= capacity) {
+        errors.push("Tento tréning je už plný (kapacita je naplnená).");
+        return res.render("rezervacie-new", {
+          title: "Nová rezervácia",
+          session,
+          errors,
+          formData: { note },
+        });
+      }
+    }
+
     const effectiveClientName = req.session.user.username;
 
     await reservationModel.create({

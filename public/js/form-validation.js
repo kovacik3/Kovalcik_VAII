@@ -47,6 +47,22 @@ function initFormValidation() {
         }
       }
 
+      // extra kontrola: username pri registrácii / profile (ak existuje)
+      const usernameInput = form.querySelector('input[name="username"]');
+      if (usernameInput) {
+        const value = usernameInput.value.trim();
+        if (value.length === 0) {
+          usernameInput.setCustomValidity("Používateľské meno je povinné.");
+          valid = false;
+        } else if (value.length < 2) {
+          usernameInput.setCustomValidity("Používateľské meno musí mať aspoň 2 znaky.");
+          valid = false;
+        } else if (value.length > 100) {
+          usernameInput.setCustomValidity("Používateľské meno môže mať najviac 100 znakov.");
+          valid = false;
+        }
+      }
+
       // extra kontrola: kapacita (ak existuje)
       const capacityInput = form.querySelector('input[name="capacity"]');
       if (capacityInput) {

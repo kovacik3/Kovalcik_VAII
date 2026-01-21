@@ -9,6 +9,7 @@ const express = require("express");
 const path = require("path");
 const session = require("express-session");
 const csrf = require("csurf");
+const helmet = require("helmet");
 
 const viewLocals = require("./middlewares/view-locals");
 const csrfErrorHandler = require("./middlewares/csrf-error-handler");
@@ -25,6 +26,14 @@ const sessionConfig = require("./config/session");
 
 // Tu sa vytvorí Express aplikácia
 const app = express();
+
+// Bezpečnostné HTTP hlavičky (pozor: CSP je vypnuté, lebo používame CDN Bootstrap/FontAwesome)
+app.disable("x-powered-by");
+app.use(
+	helmet({
+		contentSecurityPolicy: false,
+	})
+);
 
 // Konfigurácia template engine (EJS) pre vykresľovanie HTML stránok
 app.set("view engine", "ejs");

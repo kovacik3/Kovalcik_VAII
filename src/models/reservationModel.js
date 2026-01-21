@@ -33,6 +33,14 @@ async function existsForUser(sessionId, userId) {
   return rows.length > 0;
 }
 
+async function countForSession(sessionId) {
+  const [rows] = await db.query(
+    "SELECT COUNT(*) AS cnt FROM reservations WHERE session_id = ?",
+    [sessionId]
+  );
+  return Number(rows?.[0]?.cnt) || 0;
+}
+
 async function create({ session_id, client_name, note, user_id }) {
   await db.query(
     "INSERT INTO reservations (session_id, client_name, note, user_id) VALUES (?, ?, ?, ?)",
@@ -56,6 +64,7 @@ async function remove({ reservationId, isStaff, userId }) {
 module.exports = {
   listWithDetails,
   existsForUser,
+  countForSession,
   create,
   remove,
 };

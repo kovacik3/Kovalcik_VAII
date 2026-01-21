@@ -55,7 +55,7 @@ async function getById(id) {
 
 async function getForReservationNew(id) {
   const [rows] = await db.query(
-    "SELECT id, title, start_at FROM sessions WHERE id = ?",
+    "SELECT id, title, start_at, capacity FROM sessions WHERE id = ?",
     [id]
   );
   return rows[0] || null;

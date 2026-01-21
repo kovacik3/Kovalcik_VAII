@@ -12,16 +12,18 @@ function validateProfileUpdate(data) {
     errors.push("Meno je povinné");
   } else if (first_name.trim().length < 2) {
     errors.push("Meno musí mať aspoň 2 znaky");
-  } else if (first_name.trim().length > 100) {
-    errors.push("Meno môže mať najviac 100 znakov");
+  } else if (first_name.trim().length > 50) {
+    // DB: users.first_name is VARCHAR(50)
+    errors.push("Meno môže mať najviac 50 znakov");
   }
 
   if (!last_name || last_name.trim() === "") {
     errors.push("Priezvisko je povinné");
   } else if (last_name.trim().length < 2) {
     errors.push("Priezvisko musí mať aspoň 2 znaky");
-  } else if (last_name.trim().length > 100) {
-    errors.push("Priezvisko môže mať najviac 100 znakov");
+  } else if (last_name.trim().length > 50) {
+    // DB: users.last_name is VARCHAR(50)
+    errors.push("Priezvisko môže mať najviac 50 znakov");
   }
 
   if (!username || username.trim() === "") {

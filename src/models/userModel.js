@@ -41,6 +41,38 @@ async function updateRole(id, role) {
   return res?.affectedRows || 0;
 }
 
+async function updateProfile(id, { username, first_name, last_name, password_hash }) {
+  // Only allow updating safe profile fields for the currently logged-in user.
+  // email/role changes are intentionally not supported here.
+  const fields = [];
+  const params = [];
+
+  if (username !== undefined) {
+    fields.push("username = ?");
+    params.push(username);
+  }
+  if (first_name !== undefined) {
+    fields.push("first_name = ?");
+    params.push(first_name);
+  }
+  if (last_name !== undefined) {
+    fields.push("last_name = ?");
+    params.push(last_name);
+  }
+  if (password_hash !== undefined) {
+    fields.push("password_hash = ?");
+    params.push(password_hash);
+  }
+
+  if (fields.length === 0) {
+    return 0;
+  }
+
+  params.push(id);
+  const [res] = await db.query(`UPDATE users SET ${fields.join(", ")} WHERE id = ?`, params);
+  return res?.affectedRows || 0;
+}
+
 module.exports = {
   findAuthUserByEmail,
   existsByEmail,
@@ -48,4 +80,5 @@ module.exports = {
   listAllUsers,
   getById,
   updateRole,
+  updateProfile,
 };

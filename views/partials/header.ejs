@@ -39,20 +39,36 @@
             </a>
           </li>
           <% if (isAuthenticated) { %>
-            <li class="nav-item d-flex align-items-center ms-2">
-              <span class="badge bg-info text-dark"><%= currentUser.role %></span>
-            </li>
-            <li class="nav-item d-flex align-items-center ms-2">
-              <span class="text-white-50" style="font-size: 0.9rem;"><%= currentUser.email %></span>
-            </li>
-            <li class="nav-item ms-2">
-              <form action="/logout" method="POST" class="d-inline">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <button type="submit" class="btn btn-sm btn-outline-light">Odhlásiť</button>
-              </form>
+            <li class="nav-item dropdown ms-2">
+              <a
+                class="nav-link dropdown-toggle d-flex align-items-center gap-2"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <i class="fa-solid fa-user"></i>
+                <span><%= (currentUser.username || currentUser.email || "Profil") %></span>
+                <% if (currentUser.role && currentUser.role !== "user") { %>
+                  <span class="badge bg-info text-dark text-uppercase"><%= currentUser.role %></span>
+                <% } %>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="/profil"><i class="fa-regular fa-id-card me-2"></i>Môj profil</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <form action="/logout" method="POST" class="m-0">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="dropdown-item text-danger">
+                      <i class="fa-solid fa-right-from-bracket me-2"></i>Odhlásiť
+                    </button>
+                  </form>
+                </li>
+              </ul>
             </li>
           <% } else { %>
             <li class="nav-item"><a class="nav-link" href="/login">Prihlásiť</a></li>
+            <li class="nav-item"><a class="nav-link" href="/register">Registrácia</a></li>
           <% } %>
         </ul>
       </div>

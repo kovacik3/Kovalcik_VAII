@@ -36,12 +36,12 @@
             <td><%= u.email %></td>
             <td><%= (u.first_name || "") + " " + (u.last_name || "") %></td>
             <td>
-              <span class="badge <%= u.role === 'admin' ? 'bg-danger' : (u.role === 'trainer' ? 'bg-info text-dark' : 'bg-secondary') %>">
+              <span class="badge js-user-role-badge <%= u.role === 'admin' ? 'bg-danger' : (u.role === 'trainer' ? 'bg-info text-dark' : 'bg-secondary') %>">
                 <%= u.role %>
               </span>
             </td>
             <td>
-              <form action="/uzivatelia/<%= u.id %>/role" method="POST" class="d-flex gap-2" style="max-width: 420px;">
+              <form action="/uzivatelia/<%= u.id %>/role" method="POST" class="d-flex gap-2 js-ajax-user-role" data-user-id="<%= u.id %>" style="max-width: 420px;">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <select class="form-select form-select-sm" name="role" <%= (currentUser && Number(currentUser.id) === Number(u.id)) ? 'disabled' : '' %>>
                   <option value="user" <%= u.role === 'user' ? 'selected' : '' %>>user</option>

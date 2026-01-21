@@ -112,9 +112,35 @@ async function remove(req, res) {
   }
 }
 
+// AJAX variant – returns JSON instead of redirect
+async function removeAjax(req, res) {
+  const reservationId = req.params.id;
+  try {
+    const isStaff = ["admin", "trainer"].includes(req.session.user?.role);
+    const result = await reservationModel.remove({
+      reservationId,
+      isStaff,
+      userId: req.session.user.id,
+    });
+
+    if (!result || result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Rezervácia nenájdená alebo nemáš oprávnenie.",
+      });
+    }
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("Chyba pri AJAX mazani rezervacie:", err);
+    return res.status(500).json({ success: false, error: "Chyba servera" });
+  }
+}
+
 module.exports = {
   newForm,
   create,
   list,
   remove,
+  removeAjax,
 };

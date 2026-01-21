@@ -27,21 +27,21 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="/">Domov</a></li>
-          <li class="nav-item"><a class="nav-link" href="/treneri">Tréneri</a></li>
-          <li class="nav-item"><a class="nav-link" href="/treningy">Tréningy</a></li>
+          <li class="nav-item"><a class="nav-link header-link" href="/">Domov</a></li>
+          <li class="nav-item"><a class="nav-link header-link" href="/treneri">Tréneri</a></li>
+          <li class="nav-item"><a class="nav-link header-link" href="/treningy">Tréningy</a></li>
           <% if (isAdmin) { %>
-            <li class="nav-item"><a class="nav-link" href="/uzivatelia">Používatelia</a></li>
+            <li class="nav-item"><a class="nav-link header-link" href="/uzivatelia">Používatelia</a></li>
           <% } %>
           <li class="nav-item">
-            <a class="nav-link" href="/rezervacie">
+            <a class="nav-link header-link" href="/rezervacie">
               <%= (isAuthenticated && (isAdmin || isTrainer)) ? "Rezervácie" : "Moje rezervácie" %>
             </a>
           </li>
           <% if (isAuthenticated) { %>
             <li class="nav-item dropdown ms-2">
               <a
-                class="nav-link dropdown-toggle d-flex align-items-center gap-2"
+                class="nav-link dropdown-toggle d-flex align-items-center gap-2 header-link"
                 href="#"
                 role="button"
                 data-bs-toggle="dropdown"
@@ -54,12 +54,12 @@
                 <% } %>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="/profil"><i class="fa-regular fa-id-card me-2"></i>Môj profil</a></li>
+                <li><a class="dropdown-item header-link" href="/profil"><i class="fa-regular fa-id-card me-2"></i>Môj profil</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
                   <form action="/logout" method="POST" class="m-0">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <button type="submit" class="dropdown-item text-danger">
+                    <button type="submit" class="dropdown-item header-link text-danger">
                       <i class="fa-solid fa-right-from-bracket me-2"></i>Odhlásiť
                     </button>
                   </form>
@@ -67,8 +67,8 @@
               </ul>
             </li>
           <% } else { %>
-            <li class="nav-item"><a class="nav-link" href="/login">Prihlásiť</a></li>
-            <li class="nav-item"><a class="nav-link" href="/register">Registrácia</a></li>
+            <li class="nav-item"><a class="nav-link header-link" href="/login">Prihlásiť</a></li>
+            <li class="nav-item"><a class="nav-link header-link" href="/register">Registrácia</a></li>
           <% } %>
         </ul>
       </div>

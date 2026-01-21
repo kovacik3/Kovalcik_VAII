@@ -8,6 +8,7 @@ Používateľ si vie pozrieť ponuku tréningov, trénerov a vytvoriť rezervác
 ## Inicializácia databázy a seedovanie užívateľov
 
 - Vytvor `.env` v root priečinku so základnými premennými: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `SESSION_SECRET`, a predvolenými účtami vrátane všetkých potrebných údajov: `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `TRAINER_EMAIL`, `TRAINER_USERNAME`, `TRAINER_PASSWORD`, `USER_ONE_EMAIL`, `USER_ONE_USERNAME`, `USER_ONE_PASSWORD`, `USER_TWO_EMAIL`, `USER_TWO_USERNAME`, `USER_TWO_PASSWORD`.
+- **POVINNÉ:** `SESSION_SECRET` musí byť **silný náhodný reťazec** (odporúčané 32+ znakov). Slúži na podpis session cookie – slabá hodnota je bezpečnostné riziko.
 - Nainštaluj závislosti cez `npm install`.
 - Spusti `npm run seed` na vloženie (alebo aktualizáciu) admina, trénera a dvoch bežných užívateľov (`user1` a `user2`). Skript zmení heslá pre existujúce e-maily a vypíše výsledky v konzole.
 - Po úspešnom seedovaní sa môžeš prihlásiť pomocou štandardných účtov:

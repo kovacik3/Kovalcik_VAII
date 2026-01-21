@@ -4,6 +4,30 @@
   <div class="row mb-4">
     <div class="col-12">
       <h1 class="mb-4">Tréningy (sessions)</h1>
+
+      <form action="/treningy" method="GET" class="row g-2 align-items-end mb-3">
+        <div class="col-12 col-md-6 col-lg-5">
+          <label for="trainerId" class="form-label">Filtrovať podľa trénera</label>
+          <select
+            class="form-select"
+            id="trainerId"
+            name="trainerId"
+            onchange="this.form.submit()"
+          >
+            <option value="" <%= !selectedTrainerId ? "selected" : "" %>>Všetci tréneri</option>
+            <% (trainers || []).forEach(t => { %>
+              <option value="<%= t.id %>" <%= selectedTrainerId && Number(selectedTrainerId) === Number(t.id) ? "selected" : "" %>><%= t.name %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="col-12 col-md-3 col-lg-2">
+          <a href="/treningy" class="btn btn-outline-secondary w-100">Reset</a>
+          <noscript>
+            <button type="submit" class="btn btn-outline-primary w-100 mt-2">Použiť</button>
+          </noscript>
+        </div>
+      </form>
+
       <% if (isAdmin || isTrainer) { %>
         <a href="/treningy/new" class="btn btn-primary">
           <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>

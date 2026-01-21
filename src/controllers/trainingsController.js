@@ -58,10 +58,22 @@ async function create(req, res) {
 
 async function list(req, res) {
   try {
-    const rows = await sessionModel.listAllWithTrainer();
+    const rawTrainerId = (req.query?.trainerId || "").toString().trim();
+    let selectedTrainerId = null;
+    if (rawTrainerId !== "") {
+      const n = Number(rawTrainerId);
+      if (!Number.isNaN(n) && Number.isFinite(n) && n > 0) {
+        selectedTrainerId = n;
+      }
+    }
+
+    const trainers = await trainerModel.listForSelect();
+    const rows = await sessionModel.listAllWithTrainer({ trainerId: selectedTrainerId });
     res.render("treningy", {
       title: "Tréningy",
       treningy: rows,
+      trainers,
+      selectedTrainerId,
     });
   } catch (err) {
     console.error("Chyba pri nacitani tréningov:", err);

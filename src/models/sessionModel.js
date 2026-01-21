@@ -1,7 +1,10 @@
 const db = require("../db");
 
-async function listAllWithTrainer() {
-  const [rows] = await db.query(
+async function listAllWithTrainer(options = {}) {
+  const trainerIdRaw = options?.trainerId;
+  const trainerId = trainerIdRaw === null || trainerIdRaw === undefined ? null : Number(trainerIdRaw);
+
+  let sql =
     `SELECT 
        s.id,
        s.title,
@@ -10,9 +13,19 @@ async function listAllWithTrainer() {
        s.capacity,
        t.name AS trainer_name
      FROM sessions s
-     LEFT JOIN trainers t ON s.trainer_id = t.id
-     ORDER BY s.start_at`
-  );
+     LEFT JOIN trainers t ON s.trainer_id = t.id`;
+
+  const params = [];
+  if (trainerIdRaw !== null && trainerIdRaw !== undefined && trainerIdRaw !== "") {
+    if (!Number.isNaN(trainerId) && Number.isFinite(trainerId)) {
+      sql += "\n     WHERE s.trainer_id = ?";
+      params.push(trainerId);
+    }
+  }
+
+  sql += "\n     ORDER BY s.start_at";
+
+  const [rows] = await db.query(sql, params);
   return rows;
 }
 

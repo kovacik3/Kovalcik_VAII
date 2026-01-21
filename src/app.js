@@ -18,6 +18,7 @@ const authRoutes = require("./routes/authRoutes");
 const trainersRoutes = require("./routes/trainersRoutes");
 const trainingsRoutes = require("./routes/trainingsRoutes");
 const reservationsRoutes = require("./routes/reservationsRoutes");
+const usersRoutes = require("./routes/usersRoutes");
 
 const sessionConfig = require("./config/session");
 
@@ -49,6 +50,7 @@ app.use(authRoutes);
 app.use(trainersRoutes);
 app.use(trainingsRoutes);
 app.use(reservationsRoutes);
+app.use(usersRoutes);
 
 
 // CSRF error handler (user-friendly 403)

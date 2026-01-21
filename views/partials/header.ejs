@@ -30,6 +30,9 @@
           <li class="nav-item"><a class="nav-link" href="/">Domov</a></li>
           <li class="nav-item"><a class="nav-link" href="/treneri">Tréneri</a></li>
           <li class="nav-item"><a class="nav-link" href="/treningy">Tréningy</a></li>
+          <% if (isAdmin) { %>
+            <li class="nav-item"><a class="nav-link" href="/uzivatelia">Používatelia</a></li>
+          <% } %>
           <li class="nav-item">
             <a class="nav-link" href="/rezervacie">
               <%= (isAuthenticated && (isAdmin || isTrainer)) ? "Rezervácie" : "Moje rezervácie" %>

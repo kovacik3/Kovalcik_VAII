@@ -1,0 +1,67 @@
+<%- include("partials/header") %>
+
+<div class="container my-5">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1 class="mb-3">Správa používateľov</h1>
+      <p class="text-muted mb-0">Tu vie admin nastavovať roly (admin / trainer / user).</p>
+    </div>
+  </div>
+
+  <% if (errors && errors.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <strong>Chyby:</strong>
+      <ul class="mb-0 mt-2">
+        <% errors.forEach(e => { %>
+          <li><%= e %></li>
+        <% }) %>
+      </ul>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>E-mail</th>
+          <th>Meno</th>
+          <th>Rola</th>
+          <th>Akcie</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(u => { %>
+          <tr>
+            <td><%= u.email %></td>
+            <td><%= (u.first_name || "") + " " + (u.last_name || "") %></td>
+            <td>
+              <span class="badge <%= u.role === 'admin' ? 'bg-danger' : (u.role === 'trainer' ? 'bg-info text-dark' : 'bg-secondary') %>">
+                <%= u.role %>
+              </span>
+            </td>
+            <td>
+              <form action="/uzivatelia/<%= u.id %>/role" method="POST" class="d-flex gap-2" style="max-width: 420px;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <select class="form-select form-select-sm" name="role" <%= (currentUser && Number(currentUser.id) === Number(u.id)) ? 'disabled' : '' %>>
+                  <option value="user" <%= u.role === 'user' ? 'selected' : '' %>>user</option>
+                  <option value="trainer" <%= u.role === 'trainer' ? 'selected' : '' %>>trainer</option>
+                  <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>admin</option>
+                </select>
+
+                <button type="submit" class="btn btn-sm btn-primary" <%= (currentUser && Number(currentUser.id) === Number(u.id)) ? 'disabled' : '' %>>
+                  Uložiť
+                </button>
+              </form>
+              <% if (currentUser && Number(currentUser.id) === Number(u.id)) { %>
+                <div class="form-text">Seba nevieš demotnúť (ochrana pred lockoutom).</div>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include("partials/footer") %>

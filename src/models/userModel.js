@@ -21,8 +21,31 @@ async function createUser({ email, username, first_name, last_name, password_has
   return result.insertId;
 }
 
+async function listAllUsers() {
+  const [rows] = await db.query(
+    "SELECT id, email, username, first_name, last_name, role, created_at FROM users ORDER BY created_at DESC"
+  );
+  return rows;
+}
+
+async function getById(id) {
+  const [rows] = await db.query(
+    "SELECT id, email, username, first_name, last_name, role, created_at FROM users WHERE id = ?",
+    [id]
+  );
+  return rows[0] || null;
+}
+
+async function updateRole(id, role) {
+  const [res] = await db.query("UPDATE users SET role = ? WHERE id = ?", [role, id]);
+  return res?.affectedRows || 0;
+}
+
 module.exports = {
   findAuthUserByEmail,
   existsByEmail,
   createUser,
+  listAllUsers,
+  getById,
+  updateRole,
 };

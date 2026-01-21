@@ -89,16 +89,24 @@ const users = [
 
 const trainers = [
   {
-    name: "Peter Tréner",
-    specialization: "Silový tréning",
+    name: "Peter Pumpos",
+    specialization: "Pumpa a preda ti aj tesťak",
+    photo_path: "/images/trener1.jpg",
   },
   {
     name: "Mária Jógová",
     specialization: "Jóga a mobilita",
+    photo_path: "/images/trenerw4.jpg",
   },
   {
     name: "Tomáš Kondičný",
-    specialization: "Kondičné tréningy a kruhové tréningy",
+    specialization: "Kondičné tréningy",
+    photo_path: "/images/trener3.jpg",
+  },
+  {
+    name: "Martin Železo",
+    specialization: "Ťežky váhy",
+    photo_path: "/images/trener2.jpg",
   },
 ];
 
@@ -148,17 +156,21 @@ function buildSeedSessions() {
   ];
 }
 
-async function upsertTrainerByName({ name, specialization }) {
+async function upsertTrainerByName({ name, specialization, photo_path = null }) {
   const [rows] = await db.query("SELECT id FROM trainers WHERE name = ? LIMIT 1", [name]);
   if (rows.length > 0) {
     // Aktualizujeme špecializáciu, aby seed vedel upratať staré dáta.
-    await db.query("UPDATE trainers SET specialization = ? WHERE id = ?", [specialization, rows[0].id]);
+    await db.query("UPDATE trainers SET specialization = ?, photo_path = ? WHERE id = ?", [
+      specialization,
+      photo_path,
+      rows[0].id,
+    ]);
     return rows[0].id;
   }
 
   const [result] = await db.query(
-    "INSERT INTO trainers (name, specialization) VALUES (?, ?)",
-    [name, specialization]
+    "INSERT INTO trainers (name, specialization, photo_path) VALUES (?, ?, ?)",
+    [name, specialization, photo_path]
   );
   return result.insertId;
 }
@@ -182,6 +194,25 @@ async function ensureSession({ title, start_at, end_at, capacity, trainer_id }) 
     [title, start_at, end_at, Number(capacity), trainer_id ?? null]
   );
   return result.insertId;
+}
+
+async function getUserByEmail(email) {
+  const [rows] = await db.query(
+    "SELECT id, email, username, first_name, last_name FROM users WHERE email = ? LIMIT 1",
+    [email]
+  );
+  return rows[0] || null;
+}
+
+async function ensureReservation({ session_id, user_id, client_name, note = null }) {
+  await db.query(
+    `INSERT INTO reservations (session_id, client_name, note, user_id)
+     VALUES (?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE
+       client_name = VALUES(client_name),
+       note = VALUES(note)`,
+    [session_id, client_name, note, user_id]
+  );
 }
 
 (async () => {
@@ -223,7 +254,8 @@ async function ensureSession({ title, start_at, end_at, capacity, trainer_id }) 
     for (const t of trainers) {
       const name = normalizeRequiredString(t.name, "Tréner");
       const specialization = normalizeRequiredString(t.specialization, "Všeobecný tréning");
-      const id = await upsertTrainerByName({ name, specialization });
+      const photo_path = normalizeRequiredString(t.photo_path, null);
+      const id = await upsertTrainerByName({ name, specialization, photo_path });
       trainerIdsByName.set(name, id);
       console.log(`Upserted trainer ${name} (id=${id}).`);
     }
@@ -231,6 +263,7 @@ async function ensureSession({ title, start_at, end_at, capacity, trainer_id }) 
 
     console.log("Seeding sessions (tréningy)...");
     const sessions = buildSeedSessions();
+    const ensuredSessionIds = [];
     for (const s of sessions) {
       const trainer_id = s.trainer_name ? trainerIdsByName.get(s.trainer_name) ?? null : null;
       const id = await ensureSession({
@@ -240,9 +273,48 @@ async function ensureSession({ title, start_at, end_at, capacity, trainer_id }) 
         capacity: Number(s.capacity || 10),
         trainer_id,
       });
+      ensuredSessionIds.push(id);
       console.log(`Ensured session ${s.title} @ ${s.start_at} (id=${id}).`);
     }
     console.log("Session seeding finished.");
+
+    console.log("Seeding reservations (user1/user2)...");
+    const user1Email = normalizeRequiredString(process.env.USER_ONE_EMAIL || "user1@gym.local", "user1@gym.local");
+    const user2Email = normalizeRequiredString(process.env.USER_TWO_EMAIL || "user2@gym.local", "user2@gym.local");
+
+    const user1 = await getUserByEmail(user1Email);
+    const user2 = await getUserByEmail(user2Email);
+
+    const s1Id = ensuredSessionIds[0] || null;
+    const s2Id = ensuredSessionIds[1] || ensuredSessionIds[0] || null;
+
+    if (user1 && s1Id) {
+      const clientName = `${user1.first_name} ${user1.last_name}`.trim() || user1.username || "User One";
+      await ensureReservation({
+        session_id: s1Id,
+        user_id: user1.id,
+        client_name: clientName,
+        note: "Seed: automatická rezervácia (user1)",
+      });
+      console.log(`Ensured reservation: ${user1.email} -> session_id=${s1Id}`);
+    } else {
+      console.log("Skipped reservation for user1 (missing user or session).");
+    }
+
+    if (user2 && s2Id) {
+      const clientName = `${user2.first_name} ${user2.last_name}`.trim() || user2.username || "User Two";
+      await ensureReservation({
+        session_id: s2Id,
+        user_id: user2.id,
+        client_name: clientName,
+        note: "Seed: automatická rezervácia (user2)",
+      });
+      console.log(`Ensured reservation: ${user2.email} -> session_id=${s2Id}`);
+    } else {
+      console.log("Skipped reservation for user2 (missing user or session).");
+    }
+
+    console.log("Reservation seeding finished.");
   } catch (err) {
     if (err.code === "ER_NO_SUCH_TABLE") {
       console.error(

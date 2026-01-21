@@ -14,6 +14,9 @@ function safeUnlink(absPath) {
 
 function toAbsolutePublicPath(photoPath) {
   if (!photoPath || typeof photoPath !== "string") return null;
+  // We only delete files that were uploaded into /public/uploads/trainers.
+  // Seeded/static images (e.g. /images/...) should never be deleted.
+  if (!photoPath.startsWith("/uploads/trainers/")) return null;
   // photoPath is like: /uploads/trainers/filename.jpg
   const rel = photoPath.startsWith("/") ? photoPath.slice(1) : photoPath;
   return path.join(__dirname, "..", "..", "public", rel);

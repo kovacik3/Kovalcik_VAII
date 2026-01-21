@@ -43,9 +43,6 @@
 
         event.preventDefault();
 
-        const confirmed = window.confirm("Naozaj zmazať túto rezerváciu?");
-        if (!confirmed) return;
-
         const reservationId = form.getAttribute("data-reservation-id");
         if (!reservationId) {
           // fallback to normal submit

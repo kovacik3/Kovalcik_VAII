@@ -196,6 +196,9 @@ Pri vývoji tohto projektu som využíval AI ako pomocný nástroj na generovani
 ### Seedovanie dát
 - Celý `seed` mi generovala AI.
 
+### package-lock.json
+- Pri práci s `package-lock.json` a `package.json`
+
 ### Ako som AI používal
 - AI som využíval hlavne pri opakujúcich sa veciach (keď som už viackrát robil rovnaký typ kódu) alebo keď som potreboval zrýchliť prácu a spraviť kód čistejší.
 - Pri nových alebo odlišných veciach (iný jazyk, iný prístup, iný spôsob riešenia) som sa to snažil najprv skúsiť spraviť aj sám a AI som použil ako pomoc alebo kontrolu.

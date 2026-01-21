@@ -90,7 +90,7 @@ const users = [
 const trainers = [
   {
     name: "Peter Pumpos",
-    specialization: "Pumpa a preda ti aj tesťak",
+    specialization: "Trening s pumpou",
     photo_path: "/images/trener1.jpg",
   },
   {

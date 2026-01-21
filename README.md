@@ -1,165 +1,167 @@
 # Rezervačný portál posilňovne
+Aplikácia Gym Rezervácie je webový portál na správu posilňovne, trénerov, tréningov a rezervácií. Umožňuje registráciu, prihlasovanie, rezervovanie tréningov a správu používateľov podľa rolí (admin, tréner, zákazník). Postavená je na Node.js, Express, EJS a MySQL.
+## Návod na inštaláciu a spustenie
 
-Webová aplikácia pre manažment trénerov, tréningov a rezervácií v posilňovni.  
-Používateľ si vie pozrieť ponuku tréningov, trénerov a vytvoriť rezerváciu na konkrétny tréning.
+### Požiadavky
 
----
+- Node.js (odporúčané LTS)
+- MySQL Server (odporúčané MySQL 8.x) + ideálne MySQL Workbench
 
-## Inicializácia databázy a seedovanie užívateľov
+### 1) Inštalácia závislostí
 
-- Importuj databázovú schému:
-  - otvor `MySQL/schema.sql` a spusti ho v MySQL Workbench **alebo** importuj cez CLI do databázy, ktorú máš nastavenú v `DB_NAME`.
-  - poznámka: v schéme je `CREATE SCHEMA IF NOT EXISTS gym_rezervacie2` + `USE gym_rezervacie2`. Ak používaš iný názov DB, zlaď to s `DB_NAME`.
-- Vytvor `.env` v root priečinku so základnými premennými: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `SESSION_SECRET`, a predvolenými účtami vrátane všetkých potrebných údajov: `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `TRAINER_EMAIL`, `TRAINER_USERNAME`, `TRAINER_PASSWORD`, `USER_ONE_EMAIL`, `USER_ONE_USERNAME`, `USER_ONE_PASSWORD`, `USER_TWO_EMAIL`, `USER_TWO_USERNAME`, `USER_TWO_PASSWORD`.
-- **POVINNÉ:** `SESSION_SECRET` musí byť **silný náhodný reťazec** (odporúčané 32+ znakov). Slúži na podpis session cookie – slabá hodnota je bezpečnostné riziko.
-- Nainštaluj závislosti cez `npm install`.
-- Spusti `npm run seed` na vloženie (alebo aktualizáciu) admina, trénera a dvoch bežných užívateľov (`user1` a `user2`). Skript zmení heslá pre existujúce e-maily a vypíše výsledky v konzole.
-- Po úspešnom seedovaní sa môžeš prihlásiť pomocou štandardných účtov:
-  - **admin:** admin@gym.local / admin123 (`role: admin`)
-  - **trainer:** trainer@gym.local / trainer123 (`role: trainer`)
-  - **user1:** user1@gym.local / userone123 (`role: user`)
-  - **user2:** user2@gym.local / usertwo123 (`role: user`)
+V koreňovom priečinku projektu nainštaluj balíčky cez `npm install`.
 
-Ak chceš experimentovať s inými prihlasovacími údajmi, zmeň hodnoty v `.env` a znovu spusti `npm run seed`.
+### 2) Databáza (import schémy)
 
-## Použité technológie
+Schéma je v `MySQL/schema.sql`.
 
-- **Backend:** Node.js, Express
-- **Frontend:** EJS šablóny, HTML5, CSS3, Bootstrap 5, JavaScript
-- **Databáza:** MySQL (mysql2 + connection pool)
+Dôležité: v tomto projekte `schema.sql` **obsahuje** aj:
 
----
+- `CREATE SCHEMA IF NOT EXISTS gym_rezervacie`
+- `USE gym_rezervacie`
 
-## Hlavné funkcie
+To znamená, že script je pripravený pre databázu s názvom `gym_rezervacie`.
 
-- CRUD pre **trénerov** (treneri):
-  - vytvorenie nového trénera
-  - úprava existujúceho trénera
-  - zmazanie trénera
-  - výpis všetkých trénerov
+Možnosti:
 
-- CRUD pre **tréningy** (treningy / sessions):
-  - vytvorenie tréningu so začiatkom, koncom, kapacitou a trénerom
-  - úprava tréningu
-  - zmazanie tréningu
-  - výpis všetkých tréningov
+1) **Použiješ názov `gym_rezervacie` (odporúčané)**
+   - importuj `MySQL/schema.sql` (Workbench alebo CLI)
+   - v `.env` nastav `DB_NAME=gym_rezervacie`
 
-- **Rezervácie**:
-  - vytvorenie rezervácie na konkrétny tréning
-  - výpis všetkých rezervácií
-  - zmazanie rezervácie
+2) **Chceš iný názov databázy**
+   - uprav v `MySQL/schema.sql` názov v `CREATE SCHEMA ...` a `USE ...`
+   - a rovnako uprav `DB_NAME` v `.env`
 
-- **Úvodná stránka**:
-  - zobrazenie najbližších (max 3) nadchádzajúcich tréningov
-  - preklik na detail rezervácie
+### 3) Konfigurácia `.env`
 
----
+V koreňovom priečinku projektu nastav premenné prostredia v súbore `.env`.
 
-## Stránky a routy
+Odporúčaný postup:
 
-### Domov
+- skopíruj `.env.example` → `.env`
+- uprav hodnoty podľa svojho MySQL
 
-- `GET /`
-  - načíta 3 najbližšie tréningy z tabuľky `sessions`
-  - zobrazuje názov tréningu, deň v týždni a čas začiatku
+Povinné pre spustenie:
 
-### Tréneri
+- `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+- `SESSION_SECRET` (odporúčané 32+ náhodných znakov)
 
-- `GET /treneri`
-  - zoznam všetkých trénerov
+### 4) Seed (naplnenie testovacích dát)
 
-- `GET /treneri/new`
-  - formulár na pridanie trénera
+Projekt obsahuje seed skript `src/seed.js` (spúšťa sa cez `npm run seed`).
 
-- `POST /treneri/new`
-  - vytvorí nového trénera
-  - validácia na serveri: meno, špecializácia
+Čo seed spraví:
 
-- `GET /treneri/:id/edit`
-  - formulár na úpravu existujúceho trénera
+- vytvorí/aktualizuje používateľov (`users`) – admin, trainer, user1, user2 (+ jeden pevný testovací účet v kóde)
+- vytvorí/aktualizuje trénerov (`trainers`) so seed obrázkami z `public/images/*`
+- vytvorí tréningy (`sessions`) s dátumami do budúcnosti (aby sa zobrazovali na domovskej stránke)
+- vytvorí ukážkové rezervácie (`reservations`) pre user1/user2
 
-- `POST /treneri/:id/edit`
-  - aktualizuje trénera
-  - opäť serverová validácia
+Predvolené účty (seed skript používa tieto hodnoty ako default, ak ich v `.env` nenastavíš):
 
-- `POST /treneri/:id/delete`
-  - zmaže trénera
+- **admin:** `admin@gym.local` / `admin123` (rola `admin`)
+- **trainer:** `trainer@gym.local` / `trainer123` (rola `trainer`)
+- **user1:** `user1@gym.local` / `userone123` (rola `user`)
+- **user2:** `user2@gym.local` / `usertwo123` (rola `user`)
 
-### Tréningy
+Ak chceš iné prihlasovacie údaje, uprav hodnoty v `.env` a seed spusti znova.
 
-- `GET /treningy`
-  - zoznam všetkých tréningov
-  - join s tabuľkou trénerov (ak má tréning priradeného trénera)
+### 5) Spustenie aplikácie
 
-- `GET /treningy/new`
-  - formulár na pridanie tréningu
+- Dev režim (nodemon): `npm run dev`
+- Produkčné spustenie: `npm start`
 
-- `POST /treningy/new`
-  - vytvorí nový tréning
-  - validácia na serveri:
-    - názov (dĺžka)
-    - začiatok a koniec (formát, koniec po začiatku)
-    - kapacita (1–1000)
-    - trainer_id (ak je zadané, musí byť číslo)
+Server štartuje z `src/server.js` a beží defaultne na `http://localhost:3000`.
 
-- `GET /treningy/:id/edit`
-  - formulár na úpravu tréningu
+## Databázový model
 
-- `POST /treningy/:id/edit`
-  - aktualizuje tréning
-  - rovnaké pravidlá validácie ako pri vytvorení
+Diagram je v `MySQL/databaza.png` a je konzistentný so schémou v `MySQL/schema.sql` (tabuľky `users`, `trainers`, `sessions`, `reservations` + ich väzby).
 
-- `POST /treningy/:id/delete`
-  - zmaže tréning
+![Databázový model](MySQL/databaza.png)
 
-### Rezervácie
+- tabuľky: `users`, `trainers`, `sessions`, `reservations`
+- väzby:
+  - `sessions.trainer_id -> trainers.id` (ON DELETE SET NULL)
+  - `reservations.session_id -> sessions.id` (ON DELETE CASCADE)
+  - `reservations.user_id -> users.id` (ON DELETE CASCADE)
 
-- `GET /rezervacie`
-  - zoznam rezervácií (join s tréningom)
-  - **user** vidí iba svoje rezervácie
-  - **admin/trainer** vidí všetky rezervácie
+## Dokumentácia
 
-- `GET /rezervacie/new?treningId=:id`
-  - formulár na vytvorenie rezervácie na konkrétny tréning
-  - dostupné iba pre rolu **user** (admin/trainer nemôžu vytvárať rezervácie)
+### Tech stack
 
-- `POST /rezervacie/new`
-  - vytvorí rezerváciu
-  - validácia na serveri:
-    - session_id (povinné, číslo, musí existovať v tabuľke `sessions`)
-    - poznámka (max. dĺžka, voliteľná)
-  - "meno klienta" sa **nezadáva** vo formulári – server ho berie z profilu prihláseného používateľa (preferuje `username`, fallback na e-mail)
+- Backend: Node.js, Express (`src/app.js`, `src/server.js`)
+- View layer: EJS (`views/*.ejs`)
+- Databáza: MySQL cez `mysql2` pool (`src/config/database.js`)
+- Sessions: `express-session` (`src/config/session.js`)
 
-- `POST /rezervacie/:id/delete`
-  - zmaže rezerváciu
+### Architektúra (MVC tok)
 
----
+`routes` → `controllers` → `models` → MySQL
 
-## Validácia formulárov
+- routy: `src/routes/*Routes.js`
+- controllery: `src/controllers/*Controller.js`
+- modely: `src/models/*Model.js`
 
-### Klientská validácia
+### Autentifikácia a roly
 
-- Prebieha v prehliadači pomocou JavaScriptu (`/js/form-validation.js`).
-- Kontroluje:
-  - povinné polia
-  - základné formáty (napr. prázdne stringy, dĺžky)
-- Výsledok sa zobrazuje priamo vo formulári.
+- Prihlásenie: `GET/POST /login` (`src/controllers/authController.js`)
+- Registrácia: `GET/POST /register` (vytvára používateľa s rolou `user`)
+- Odhlásenie: `POST /logout`
 
-### Serverová validácia
+Roly:
 
-- Implementovaná v `src/validators/*` (export cez `src/validators/index.js`).
-- Používané funkcie:
-  - `validateTrainer(body)`
-  - `validateTraining(body)`
-  - `validateReservation(body)`
-  - `validateRegistration(body)`
-  - `validateProfileUpdate(body)`
-- Každý POST route volá príslušnú validačnú funkciu ešte pred zápisom do databázy.
+- `admin`: správa používateľov + tréneri + tréningy + vidí všetky rezervácie
+- `trainer`: tréningy + vidí všetky rezervácie
+- `user`: vytvára rezervácie, vidí iba svoje
 
-Poznámka: súbor `src/validacia-server.js` je len backward-compatible wrapper (ak by sa niekde používali staré názvy funkcií), no aktuálne controllery používajú priamo `src/validators`.
-- Ak sú chyby:
-  - údaje sa neuložia
-  - formulár sa zobrazí znova s vypísanými chybami a pôvodnými hodnotami.
+Vynucovanie rolí je cez middleware `requireRole(...)` a `requireCustomer` (`src/middlewares/auth.js`).
 
----
+### Funkcie aplikácie (čo kde nájdeš)
+
+- Tréneri (CRUD, admin-only):
+  - `GET /treneri`
+  - `GET/POST /treneri/new`
+  - `GET/POST /treneri/:id/edit`
+  - `POST /treneri/:id/delete`
+  - upload fotky cez multer: `src/middlewares/trainer-upload.js` (max 3MB, jpeg/png/webp)
+
+- Tréningy / sessions (CRUD, admin+trainer):
+  - `GET /treningy` (+ filter podľa trénera)
+  - `GET/POST /treningy/new`
+  - `GET/POST /treningy/:id/edit`
+  - `POST /treningy/:id/delete`
+
+- Rezervácie:
+  - `GET /rezervacie` (user: svoje, staff: všetky)
+  - `GET/POST /rezervacie/new?treningId=...` (iba rola `user`)
+  - `POST /rezervacie/:id/delete`
+  - ochrany: duplicitná rezervácia + kontrola kapacity (v `src/controllers/reservationsController.js`)
+
+- Správa používateľov (admin-only):
+  - `GET /uzivatelia`
+  - `POST /uzivatelia/:id/role`
+
+### AJAX funkcionality
+
+Klientsky JS je v `public/js/ajax.js`:
+
+- zmazanie rezervácie bez reloadu: `POST /api/rezervacie/:id/delete`
+- zmena roly používateľa bez reloadu: `POST /api/uzivatelia/:id/role`
+
+### Bezpečnosť
+
+- CSRF ochrana: `csurf` (globálne v `src/app.js`), token v `res.locals` cez `src/middlewares/view-locals.js`
+- Rate limiting pre login: `src/middlewares/rate-limiters.js`
+- Helmet headers: `helmet` v `src/app.js` (CSP vypnuté kvôli CDN)
+- Session cookie: `httpOnly`, `sameSite=lax`, `secure` v produkcii (`src/config/session.js`)
+
+### Údržba (cleanup)
+
+`src/services/cleanupService.js` pravidelne maže skončené tréningy (sessions s `end_at < NOW()`), pričom rezervácie sa zmažú automaticky cez FK `ON DELETE CASCADE`.
+
+## Troubleshooting
+
+- Chyba „Chýba DB_NAME v .env“: doplň `DB_NAME` do `.env` a uisti sa, že databáza existuje.
+- Chyba „ER_NO_SUCH_TABLE“ pri seedovaní: najprv importuj `MySQL/schema.sql` do DB.
+- Upload fotky neprejde: typ musí byť `jpeg/png/webp` a veľkosť max 3MB.
 

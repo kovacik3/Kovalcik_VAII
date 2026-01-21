@@ -1,11 +1,12 @@
 const reservationModel = require("../models/reservationModel");
 const sessionModel = require("../models/sessionModel");
 const { validateReservation } = require("../validators");
+const { parsePositiveInt } = require("../utils/id");
 
 async function newForm(req, res) {
-  const treningId = req.query.treningId;
+  const treningId = parsePositiveInt(req.query.treningId);
   if (!treningId) {
-    return res.status(400).send("Chýba treningId");
+    return res.status(400).send("Neplatné treningId");
   }
 
   try {
@@ -30,10 +31,15 @@ async function create(req, res) {
   const { session_id, note } = req.body;
   const errors = validateReservation(req.body);
 
+  const sessionIdParsed = parsePositiveInt(session_id);
+  if (!sessionIdParsed) {
+    errors.push("Neplatné ID tréningu");
+  }
+
   let session = null;
 
   try {
-    session = await sessionModel.getForReservationNew(session_id);
+    session = sessionIdParsed ? await sessionModel.getForReservationNew(sessionIdParsed) : null;
     if (!session) {
       errors.push("Zvolený tréning neexistuje.");
     }
@@ -47,7 +53,7 @@ async function create(req, res) {
       });
     }
 
-    const dupe = await reservationModel.existsForUser(Number(session_id), req.session.user.id);
+    const dupe = await reservationModel.existsForUser(sessionIdParsed, req.session.user.id);
     if (dupe) {
       errors.push("Už máš rezerváciu na tento tréning.");
       return res.render("rezervacie-new", {
@@ -61,7 +67,7 @@ async function create(req, res) {
     const effectiveClientName = req.session.user.username;
 
     await reservationModel.create({
-      session_id: Number(session_id),
+      session_id: sessionIdParsed,
       client_name: effectiveClientName,
       note: note && note.trim() ? note.trim() : null,
       user_id: req.session.user.id,
@@ -93,7 +99,10 @@ async function list(req, res) {
 }
 
 async function remove(req, res) {
-  const reservationId = req.params.id;
+  const reservationId = parsePositiveInt(req.params.id);
+  if (!reservationId) {
+    return res.status(400).send("Neplatné ID rezervácie");
+  }
   try {
     const isStaff = ["admin", "trainer"].includes(req.session.user?.role);
     const result = await reservationModel.remove({
@@ -114,7 +123,10 @@ async function remove(req, res) {
 
 // AJAX variant – returns JSON instead of redirect
 async function removeAjax(req, res) {
-  const reservationId = req.params.id;
+  const reservationId = parsePositiveInt(req.params.id);
+  if (!reservationId) {
+    return res.status(400).json({ success: false, error: "Neplatné ID rezervácie" });
+  }
   try {
     const isStaff = ["admin", "trainer"].includes(req.session.user?.role);
     const result = await reservationModel.remove({

@@ -5,8 +5,11 @@ function validateReservation(data) {
 
   if (!session_id || session_id === "") {
     errors.push("Výber tréningového kurzu je povinný");
-  } else if (isNaN(Number(session_id))) {
-    errors.push("Neplatné ID tréningového kurzu");
+  } else {
+    const n = Number(session_id);
+    if (!Number.isFinite(n) || !Number.isInteger(n) || n <= 0) {
+      errors.push("Neplatné ID tréningového kurzu");
+    }
   }
 
   if (note && note.trim().length > 255) {

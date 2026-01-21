@@ -1,4 +1,5 @@
 const userModel = require("../models/userModel");
+const { parsePositiveInt } = require("../utils/id");
 
 const ALLOWED_ROLES = new Set(["admin", "trainer", "user"]);
 
@@ -17,11 +18,11 @@ async function list(req, res) {
 }
 
 async function updateRole(req, res) {
-  const targetUserId = Number(req.params.id);
+  const targetUserId = parsePositiveInt(req.params.id);
   const newRole = (req.body?.role || "").toString().trim();
 
   const errors = [];
-  if (!targetUserId || Number.isNaN(targetUserId)) {
+  if (!targetUserId) {
     errors.push("Neplatné ID používateľa.");
   }
 
@@ -75,11 +76,11 @@ async function updateRole(req, res) {
 
 // AJAX variant – returns JSON instead of rendering a page
 async function updateRoleAjax(req, res) {
-  const targetUserId = Number(req.params.id);
+  const targetUserId = parsePositiveInt(req.params.id);
   const newRole = (req.body?.role || "").toString().trim();
 
   const errors = [];
-  if (!targetUserId || Number.isNaN(targetUserId)) {
+  if (!targetUserId) {
     errors.push("Neplatné ID používateľa.");
   }
 

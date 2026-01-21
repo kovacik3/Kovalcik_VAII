@@ -2,6 +2,7 @@ const sessionModel = require("../models/sessionModel");
 const trainerModel = require("../models/trainerModel");
 const { validateTraining } = require("../validators");
 const { datetimeLocalToMySql, datetimeLocalToDate } = require("../utils/datetime");
+const { parsePositiveInt } = require("../utils/id");
 
 async function newForm(req, res) {
   try {
@@ -82,7 +83,10 @@ async function list(req, res) {
 }
 
 async function editForm(req, res) {
-  const treningId = req.params.id;
+  const treningId = parsePositiveInt(req.params.id);
+  if (!treningId) {
+    return res.status(400).send("Neplatné ID tréningu");
+  }
   try {
     const trening = await sessionModel.getById(treningId);
     if (!trening) {
@@ -102,7 +106,10 @@ async function editForm(req, res) {
 }
 
 async function update(req, res) {
-  const treningId = req.params.id;
+  const treningId = parsePositiveInt(req.params.id);
+  if (!treningId) {
+    return res.status(400).send("Neplatné ID tréningu");
+  }
   const { title, start_at, end_at, capacity, trainer_id } = req.body;
   const errors = validateTraining(req.body);
 
@@ -148,7 +155,10 @@ async function update(req, res) {
 }
 
 async function remove(req, res) {
-  const treningId = req.params.id;
+  const treningId = parsePositiveInt(req.params.id);
+  if (!treningId) {
+    return res.status(400).send("Neplatné ID tréningu");
+  }
   try {
     await sessionModel.remove(treningId);
     res.redirect("/treningy");

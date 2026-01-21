@@ -2,6 +2,7 @@ const trainerModel = require("../models/trainerModel");
 const { validateTrainer } = require("../validators");
 const path = require("path");
 const fs = require("fs");
+const { parsePositiveInt } = require("../utils/id");
 
 function safeUnlink(absPath) {
   if (!absPath) return;
@@ -82,7 +83,10 @@ async function create(req, res) {
 }
 
 async function editForm(req, res) {
-  const trainerId = req.params.id;
+  const trainerId = parsePositiveInt(req.params.id);
+  if (!trainerId) {
+    return res.status(400).send("Neplatné ID trénera");
+  }
   try {
     const trainer = await trainerModel.getById(trainerId);
     if (!trainer) {
@@ -100,7 +104,13 @@ async function editForm(req, res) {
 }
 
 async function update(req, res) {
-  const trainerId = req.params.id;
+  const trainerId = parsePositiveInt(req.params.id);
+  if (!trainerId) {
+    if (req.file?.path) {
+      safeUnlink(req.file.path);
+    }
+    return res.status(400).send("Neplatné ID trénera");
+  }
   const { name, specialization } = req.body;
   const errors = validateTrainer(req.body);
 
@@ -165,7 +175,10 @@ async function update(req, res) {
 }
 
 async function remove(req, res) {
-  const trainerId = req.params.id;
+  const trainerId = parsePositiveInt(req.params.id);
+  if (!trainerId) {
+    return res.status(400).send("Neplatné ID trénera");
+  }
   try {
     const trainer = await trainerModel.getById(trainerId);
     await trainerModel.remove(trainerId);

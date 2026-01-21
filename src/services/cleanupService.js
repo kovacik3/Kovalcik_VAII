@@ -1,5 +1,12 @@
 const sessionModel = require("../models/sessionModel");
 
+/**
+ * Cleanup service.
+ *
+ * Úloha: periodicky mazať tréningy, ktoré už skončili (end_at < NOW()).
+ * Rezervácie sa zmažú automaticky cez ON DELETE CASCADE.
+ */
+
 async function runCleanupOnce() {
   try {
     const deletedSessions = await sessionModel.cleanupExpiredSessions();
@@ -14,7 +21,7 @@ async function runCleanupOnce() {
 }
 
 function scheduleCleanup() {
-  // immediately + every hour
+  // Spustíme hneď po štarte + potom každú hodinu.
   runCleanupOnce();
   setInterval(runCleanupOnce, 60 * 60 * 1000);
 }

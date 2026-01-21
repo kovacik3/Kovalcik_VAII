@@ -4,6 +4,17 @@ const { validateTraining } = require("../validators");
 const { datetimeLocalToMySql, datetimeLocalToDate } = require("../utils/datetime");
 const { parsePositiveInt } = require("../utils/id");
 
+/**
+ * Tréningy (sessions) – controller.
+ *
+ * Poznámka k času:
+ * - input type="datetime-local" posiela formát `YYYY-MM-DDTHH:MM`
+ * - do DB ukladáme MySQL `YYYY-MM-DD HH:MM:SS`
+ */
+
+/**
+ * GET /treningy/new – formulár pre vytvorenie tréningu.
+ */
 async function newForm(req, res) {
   try {
     const trainers = await trainerModel.listForSelect();
@@ -19,6 +30,9 @@ async function newForm(req, res) {
   }
 }
 
+/**
+ * POST /treningy/new – vytvorenie tréningu.
+ */
 async function create(req, res) {
   const { title, start_at, end_at, capacity, trainer_id } = req.body;
   const errors = validateTraining(req.body);
@@ -39,6 +53,7 @@ async function create(req, res) {
     }
   }
 
+  // Konverzia formátu z HTML inputu na MySQL datetime.
   const startForDb = datetimeLocalToMySql(start_at);
   const endForDb = datetimeLocalToMySql(end_at);
 
@@ -57,6 +72,10 @@ async function create(req, res) {
   }
 }
 
+/**
+ * GET /treningy – zoznam tréningov.
+ * Podporuje filter podľa trénera cez query param `trainerId`.
+ */
 async function list(req, res) {
   try {
     const rawTrainerId = (req.query?.trainerId || "").toString().trim();
@@ -82,6 +101,9 @@ async function list(req, res) {
   }
 }
 
+/**
+ * GET /treningy/:id/edit – formulár pre edit tréningu.
+ */
 async function editForm(req, res) {
   const treningId = parsePositiveInt(req.params.id);
   if (!treningId) {
@@ -105,6 +127,9 @@ async function editForm(req, res) {
   }
 }
 
+/**
+ * POST /treningy/:id/edit – uloženie úprav tréningu.
+ */
 async function update(req, res) {
   const treningId = parsePositiveInt(req.params.id);
   if (!treningId) {
@@ -121,6 +146,7 @@ async function update(req, res) {
         trening: {
           id: treningId,
           title,
+          // Pre EJS potrebujeme Date objekt, aby sa dal pekne vypísať do inputu.
           start_at: datetimeLocalToDate(start_at),
           end_at: datetimeLocalToDate(end_at),
           capacity,
@@ -154,6 +180,9 @@ async function update(req, res) {
   }
 }
 
+/**
+ * POST /treningy/:id/delete – zmazanie tréningu.
+ */
 async function remove(req, res) {
   const treningId = parsePositiveInt(req.params.id);
   if (!treningId) {

@@ -1,3 +1,9 @@
+/**
+ * Express error-handling middleware pre CSRF chyby.
+ *
+ * Knižnica `csurf` v prípade chýbajúceho/neplatného tokenu vyhodí error s kódom `EBADCSRFTOKEN`.
+ * Tu ho zachytíme a vrátime používateľovi zrozumiteľnú 403 odpoveď.
+ */
 function csrfErrorHandler(err, req, res, next) {
   if (err && err.code === "EBADCSRFTOKEN") {
     console.error("CSRF token error:", err);

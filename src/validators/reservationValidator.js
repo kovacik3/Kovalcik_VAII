@@ -1,3 +1,6 @@
+/**
+ * Validácia formulára rezervácie.
+ */
 function validateReservation(data) {
   const errors = [];
   const session_id = data?.session_id;

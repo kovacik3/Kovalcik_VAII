@@ -1,6 +1,12 @@
 const db = require("../db");
 
+/**
+ * Model pre tabuľku `trainers`.
+ * Obsahuje CRUD operácie a pomocné výpisy (napr. pre <select>).
+ */
+
 async function listAll() {
+  // Výpis trénerov pre verejnú stránku.
   const [rows] = await db.query("SELECT id, name, specialization, photo_path FROM trainers");
   return rows;
 }
@@ -14,6 +20,7 @@ async function getById(id) {
 }
 
 async function listForSelect() {
+  // Minimalistický výpis pre dropdown (id + name).
   const [rows] = await db.query("SELECT id, name FROM trainers ORDER BY name");
   return rows;
 }

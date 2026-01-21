@@ -3,6 +3,18 @@ const sessionModel = require("../models/sessionModel");
 const { validateReservation } = require("../validators");
 const { parsePositiveInt } = require("../utils/id");
 
+/**
+ * Rezervácie – controller.
+ *
+ * Pravidlá:
+ * - rezerváciu môže vytvoriť iba zákazník (kontroluje middleware `requireCustomer` v routes)
+ * - používateľ nemôže mať 2 rezervácie na ten istý tréning
+ * - ak má session kapacitu, nedovolíme prekročiť počet rezervácií
+ */
+
+/**
+ * GET /rezervacie/new?treningId=... – formulár novej rezervácie.
+ */
 async function newForm(req, res) {
   const treningId = parsePositiveInt(req.query.treningId);
   if (!treningId) {
@@ -27,6 +39,10 @@ async function newForm(req, res) {
   }
 }
 
+/**
+ * POST /rezervacie/new – vytvorenie rezervácie.
+ * Validuje vstup, overí existenciu tréningu, duplikát rezervácie a kapacitu.
+ */
 async function create(req, res) {
   const { session_id, note } = req.body;
   const errors = validateReservation(req.body);
@@ -39,6 +55,7 @@ async function create(req, res) {
   let session = null;
 
   try {
+    // Pre render formulára potrebujeme info o session (title, start_at, capacity).
     session = sessionIdParsed ? await sessionModel.getForReservationNew(sessionIdParsed) : null;
     if (!session) {
       errors.push("Zvolený tréning neexistuje.");
@@ -53,6 +70,7 @@ async function create(req, res) {
       });
     }
 
+    // Zákaz duplikátov – jeden user môže mať na session iba 1 rezerváciu.
     const dupe = await reservationModel.existsForUser(sessionIdParsed, req.session.user.id);
     if (dupe) {
       errors.push("Už máš rezerváciu na tento tréning.");
@@ -64,6 +82,7 @@ async function create(req, res) {
       });
     }
 
+    // Kapacita – ak je definovaná a > 0, kontrolujeme počet rezervácií.
     const capacity = Number(session?.capacity);
     if (Number.isFinite(capacity) && capacity > 0) {
       const reservedCount = await reservationModel.countForSession(sessionIdParsed);
@@ -78,6 +97,7 @@ async function create(req, res) {
       }
     }
 
+    // Meno klienta berieme zo session (username). Na formulári ho netreba posielať.
     const effectiveClientName = req.session.user.username;
 
     await reservationModel.create({
@@ -94,6 +114,10 @@ async function create(req, res) {
   }
 }
 
+/**
+ * GET /rezervacie – výpis rezervácií.
+ * Staff (admin/trainer) vidí všetky, user iba svoje.
+ */
 async function list(req, res) {
   try {
     const isStaff = ["admin", "trainer"].includes(req.session.user?.role);
@@ -112,6 +136,10 @@ async function list(req, res) {
   }
 }
 
+/**
+ * POST /rezervacie/:id/delete – zmaže rezerváciu.
+ * Staff môže mazať akúkoľvek, user iba vlastnú.
+ */
 async function remove(req, res) {
   const reservationId = parsePositiveInt(req.params.id);
   if (!reservationId) {
@@ -135,7 +163,10 @@ async function remove(req, res) {
   }
 }
 
-// AJAX variant – returns JSON instead of redirect
+/**
+ * POST /api/rezervacie/:id/delete – AJAX variant mazania.
+ * Vracia JSON a front-end odstráni riadok tabuľky bez refreshu.
+ */
 async function removeAjax(req, res) {
   const reservationId = parsePositiveInt(req.params.id);
   if (!reservationId) {

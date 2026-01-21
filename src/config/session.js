@@ -1,4 +1,9 @@
-// Central session configuration
+/**
+ * Centrálna konfigurácia sessions.
+ *
+ * Poznámka:
+ * - V produkcii odporúčam použiť persistent store (napr. Redis) namiesto default memory store.
+ */
 
 require("dotenv").config();
 
@@ -8,9 +13,9 @@ module.exports = {
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    // In production behind HTTPS you want secure cookies.
+    // V produkcii za HTTPS chceš secure cookies.
     secure: process.env.NODE_ENV === "production",
-    // Helps against CSRF; still keep csurf for form posts.
+    // Pomáha proti CSRF; aj tak používame `csurf` pre POSTy.
     sameSite: "lax",
     // 24h
     maxAge: 24 * 60 * 60 * 1000,

@@ -1,3 +1,10 @@
+/**
+ * Client-side validácia formulárov (Bootstrap validation).
+ *
+ * - aktivuje sa na formoch s triedou `.js-validate`
+ * - používa HTML5 constraint validation API + vlastné custom hlášky
+ * - pri chybe zablokuje submit a pridá Bootstrap triedu `was-validated`
+ */
 document.addEventListener("DOMContentLoaded", () => {
   initFormValidation();
 });
@@ -89,6 +96,7 @@ function initFormValidation() {
       }
 
       if (!valid) {
+        // Zrušíme odoslanie formulára (Bootstrap potom zobrazí invalid feedback).
         event.preventDefault();
         event.stopPropagation();
       }
@@ -99,6 +107,7 @@ function initFormValidation() {
 }
 
 function clearCustomErrors(form) {
+  // Vyčistí predošlé custom hlášky, aby sa validácia správala predvídateľne.
   const inputs = form.querySelectorAll("input, textarea, select");
   inputs.forEach((el) => el.setCustomValidity(""));
 }

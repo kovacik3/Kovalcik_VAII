@@ -2,6 +2,15 @@ const bcrypt = require("bcrypt");
 const userModel = require("../models/userModel");
 const { validateProfileUpdate } = require("../validators");
 
+/**
+ * Profil používateľa.
+ *
+ * Poznámka: email a rola sa tu nemenia (z bezpečnostných dôvodov).
+ */
+
+/**
+ * GET /profil – zobrazí profil prihláseného používateľa.
+ */
 async function getProfile(req, res) {
   const userId = req.session.user?.id;
   if (!userId) {
@@ -24,6 +33,9 @@ async function getProfile(req, res) {
   }
 }
 
+/**
+ * GET /profil/edit – zobrazí formulár pre editáciu profilu.
+ */
 async function getEditProfile(req, res) {
   const userId = req.session.user?.id;
   if (!userId) {
@@ -52,6 +64,11 @@ async function getEditProfile(req, res) {
   }
 }
 
+/**
+ * POST /profil/edit – spracuje zmenu profilu.
+ * - základné údaje (meno/priezvisko/username) sú povinné
+ * - heslo je voliteľné (ak je vyplnené, validuje sa + hash)
+ */
 async function postEditProfile(req, res) {
   const userId = req.session.user?.id;
   if (!userId) {
@@ -88,13 +105,14 @@ async function postEditProfile(req, res) {
     };
 
     if (password && password.toString().trim() !== "") {
+      // Zmena hesla -> uloží sa hash.
       const passwordHash = await bcrypt.hash(password.toString(), 10);
       update.password_hash = passwordHash;
     }
 
     await userModel.updateProfile(userId, update);
 
-    // Keep session user info in sync for navbar.
+    // Udržíme session user info konzistentné pre navbar.
     if (req.session.user) {
       req.session.user.username = normalizedUsername;
     }

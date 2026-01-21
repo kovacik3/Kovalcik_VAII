@@ -1,6 +1,15 @@
 const db = require("../db");
 
+/**
+ * Model pre tabuľku `users`.
+ *
+ * Poznámka:
+ * - autentifikácia používa bcrypt hash uložený v `password_hash`
+ * - roly sú: admin / trainer / user
+ */
+
 async function findAuthUserByEmail(email) {
+  // Vraciame aj `password_hash` – iba pre účely prihlásenia.
   const [rows] = await db.query(
     "SELECT id, email, username, password_hash, role FROM users WHERE email = ?",
     [email]
@@ -42,8 +51,8 @@ async function updateRole(id, role) {
 }
 
 async function updateProfile(id, { username, first_name, last_name, password_hash }) {
-  // Only allow updating safe profile fields for the currently logged-in user.
-  // email/role changes are intentionally not supported here.
+  // Upravujeme len bezpečné profilové polia.
+  // email/role sa tu zámerne nemenia.
   const fields = [];
   const params = [];
 

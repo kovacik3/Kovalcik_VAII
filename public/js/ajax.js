@@ -2,6 +2,9 @@
 // - Reservation delete (rezervacie)
 // - User role update (uzivatelia)
 
+// Tento súbor je čisto „UX vylepšenie“ – serverové routy existujú aj v ne-AJAX verziách.
+// Ak fetch nie je dostupný, formuláre fungujú klasicky cez POST + redirect.
+
 (function () {
   "use strict";
 
@@ -11,12 +14,14 @@
   });
 
   function getCsrfTokenFromForm(form) {
+    // CSRF token berieme z hidden inputu v každom formulári.
     return form?.querySelector('input[name="_csrf"]')?.value || "";
   }
 
   function setButtonLoading(button, isLoading) {
     if (!button) return;
     if (isLoading) {
+      // Jednoduchý loader (spinner) – zamedzí dvojklikom.
       button.disabled = true;
       button.dataset._oldHtml = button.innerHTML;
       button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
@@ -77,6 +82,7 @@
 
           const row = form.closest("tr");
           if (row) {
+            // Jemná animácia a potom odstránenie riadku tabuľky.
             row.style.opacity = "0.5";
             row.style.transition = "opacity 200ms ease";
             setTimeout(() => row.remove(), 200);

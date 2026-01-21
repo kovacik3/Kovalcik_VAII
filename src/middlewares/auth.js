@@ -1,5 +1,16 @@
-// Auth / authorization middlewares
+/**
+ * Auth / authorization middlewares.
+ *
+ * Zodpovednosti:
+ * - kontrola prihlásenia používateľa
+ * - kontrola roly (admin/trainer/user)
+ * - presmerovanie na /login + uloženie pôvodnej URL (returnTo)
+ */
 
+/**
+ * Vyžaduje, aby bol používateľ prihlásený.
+ * Ak nie je, uloží pôvodnú URL do session a presmeruje na login.
+ */
 function requireAuth(req, res, next) {
   if (!req.session.user) {
     req.session.returnTo = req.originalUrl;
@@ -8,6 +19,11 @@ function requireAuth(req, res, next) {
   next();
 }
 
+/**
+ * Middleware factory: vyžaduje, aby bol používateľ prihlásený a mal jednu z povolených rolí.
+ *
+ * @param  {...string} roles Povolené roly (napr. "admin", "trainer")
+ */
 function requireRole(...roles) {
   return (req, res, next) => {
     if (!req.session.user) {
@@ -21,6 +37,10 @@ function requireRole(...roles) {
   };
 }
 
+/**
+ * Vyžaduje prihláseného zákazníka (role === "user").
+ * Použité najmä pri tvorbe rezervácií – admin ani tréner nemajú vytvárať rezervácie.
+ */
 function requireCustomer(req, res, next) {
   if (!req.session.user) {
     req.session.returnTo = req.originalUrl;

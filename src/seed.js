@@ -1,9 +1,18 @@
-// Generated with AI: seeds default user accounts for the gym reservation portal.
+/**
+ * Seed skript – naplní databázu základnými dátami (users, trainers, sessions, reservations).
+ *
+ * Použitie: `npm run seed`
+ *
+ * Upozornenie:
+ * - Pre existujúce e-maily robí UPSERT a môže prepísať heslo/roly podľa `.env`.
+ * - Pred spustením musí byť importovaná DB schéma (`MySQL/schema.sql`).
+ */
 require("dotenv").config();
 const bcrypt = require("bcrypt");
 const db = require("./db");
 
 function deriveUsernameFromEmail(email) {
+  // Jednoduché odvodenie username z emailu (časť pred @).
   if (!email || typeof email !== "string") return "user";
   const at = email.indexOf("@");
   if (at <= 0) return email.trim() || "user";
@@ -20,7 +29,7 @@ function pad2(n) {
 }
 
 function toMySqlDatetime(d) {
-  // Returns: YYYY-MM-DD HH:MM:SS (local time)
+  // Formát pre MySQL DATETIME: YYYY-MM-DD HH:MM:SS (lokálny čas)
   return (
     d.getFullYear() +
     "-" +
@@ -157,6 +166,7 @@ function buildSeedSessions() {
 }
 
 async function upsertTrainerByName({ name, specialization, photo_path = null }) {
+  // UPSERT trénera podľa mena (v tomto projekte je to jednoduchý identifikátor pre seedovanie).
   const [rows] = await db.query("SELECT id FROM trainers WHERE name = ? LIMIT 1", [name]);
   if (rows.length > 0) {
     // Aktualizujeme špecializáciu, aby seed vedel upratať staré dáta.
@@ -176,6 +186,7 @@ async function upsertTrainerByName({ name, specialization, photo_path = null }) 
 }
 
 async function ensureSession({ title, start_at, end_at, capacity, trainer_id }) {
+  // Session identifikujeme kombináciou (title + start_at), aby sa seed dal spúšťať opakovane.
   const [existing] = await db.query(
     "SELECT id FROM sessions WHERE title = ? AND start_at = ? LIMIT 1",
     [title, start_at]
@@ -205,6 +216,7 @@ async function getUserByEmail(email) {
 }
 
 async function ensureReservation({ session_id, user_id, client_name, note = null }) {
+  // Rezervácie v schéme majú unikát (session_id, user_id) – vďaka tomu vieme robiť UPSERT.
   await db.query(
     `INSERT INTO reservations (session_id, client_name, note, user_id)
      VALUES (?, ?, ?, ?)
@@ -217,7 +229,7 @@ async function ensureReservation({ session_id, user_id, client_name, note = null
 
 (async () => {
   try {
-    console.log("Seeding users... this may overwrite passwords for existing emails.");
+    console.log("Seeding users... môže prepísať heslá pre existujúce e-maily.");
 
     for (const u of users) {
       const email = normalizeRequiredString(u.email, "user@gym.local");

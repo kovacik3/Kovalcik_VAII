@@ -4,6 +4,17 @@ const path = require("path");
 const fs = require("fs");
 const { parsePositiveInt } = require("../utils/id");
 
+/**
+ * Tréneri – controller.
+ *
+ * Poznámka k fotkám:
+ * - uploady sa ukladajú do `/public/uploads/trainers`
+ * - statické obrázky z `/public/images` sa nemažú
+ */
+
+/**
+ * Bezpečné zmazanie súboru (ignoruje chyby).
+ */
 function safeUnlink(absPath) {
   if (!absPath) return;
   try {
@@ -13,6 +24,10 @@ function safeUnlink(absPath) {
   }
 }
 
+/**
+ * Prepočíta verejnú cestu (napr. `/uploads/trainers/x.jpg`) na absolútnu cestu v `public/`.
+ * Vracia null, ak cesta nie je z upload priečinka (ochrana pred zmazaním iných súborov).
+ */
 function toAbsolutePublicPath(photoPath) {
   if (!photoPath || typeof photoPath !== "string") return null;
   // We only delete files that were uploaded into /public/uploads/trainers.
@@ -23,6 +38,9 @@ function toAbsolutePublicPath(photoPath) {
   return path.join(__dirname, "..", "..", "public", rel);
 }
 
+/**
+ * GET /treneri – zoznam trénerov.
+ */
 async function list(req, res) {
   try {
     const rows = await trainerModel.listAll();
@@ -36,6 +54,9 @@ async function list(req, res) {
   }
 }
 
+/**
+ * GET /treneri/new – formulár pre vytvorenie trénera (admin-only v routes).
+ */
 async function newForm(req, res) {
   res.render("treneri-new", {
     title: "Nový tréner",
@@ -44,6 +65,10 @@ async function newForm(req, res) {
   });
 }
 
+/**
+ * POST /treneri/new – vytvorenie trénera.
+ * Validuje input a spracuje upload fotky (ak existuje).
+ */
 async function create(req, res) {
   const { name, specialization } = req.body;
   const errors = validateTrainer(req.body);
@@ -54,7 +79,7 @@ async function create(req, res) {
   }
 
   if (errors.length > 0) {
-    // ak už multer uložil súbor a validácia padla, vymažeme ho
+    // Ak už multer uložil súbor a validácia padla, vymažeme ho (aby sa nehromadili orphan súbory).
     if (req.file?.path) {
       safeUnlink(req.file.path);
     }
@@ -82,6 +107,9 @@ async function create(req, res) {
   }
 }
 
+/**
+ * GET /treneri/:id/edit – formulár pre úpravu trénera.
+ */
 async function editForm(req, res) {
   const trainerId = parsePositiveInt(req.params.id);
   if (!trainerId) {
@@ -103,6 +131,10 @@ async function editForm(req, res) {
   }
 }
 
+/**
+ * POST /treneri/:id/edit – uloženie úprav trénera.
+ * Ak sa nahrá nová fotka, starú zmažeme (iba ak bola z upload priečinka).
+ */
 async function update(req, res) {
   const trainerId = parsePositiveInt(req.params.id);
   if (!trainerId) {
@@ -160,6 +192,7 @@ async function update(req, res) {
       photo_path: newPhotoPath !== undefined ? newPhotoPath : undefined,
     });
 
+    // Ak sa zmenila fotka, zmažeme starý upload súbor.
     if (req.file && existing.photo_path) {
       safeUnlink(toAbsolutePublicPath(existing.photo_path));
     }
@@ -174,6 +207,10 @@ async function update(req, res) {
   }
 }
 
+/**
+ * POST /treneri/:id/delete – zmazanie trénera.
+ * Ak mal tréner uploadnutú fotku, zmažeme ju (bezpečne).
+ */
 async function remove(req, res) {
   const trainerId = parsePositiveInt(req.params.id);
   if (!trainerId) {

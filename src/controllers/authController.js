@@ -2,6 +2,19 @@ const bcrypt = require("bcrypt");
 const userModel = require("../models/userModel");
 const { validateRegistration } = require("../validators");
 
+/**
+ * Auth controller.
+ *
+ * Zodpovednosti:
+ * - zobraziť login/register formulár
+ * - overiť prihlasovacie údaje a zapísať používateľa do session
+ * - vytvoriť nového používateľa (registrácia) + auto-login
+ */
+
+/**
+ * GET /login – zobrazí prihlasovací formulár.
+ * Ak je user už prihlásený, presmeruje ho na domov.
+ */
 async function getLogin(req, res) {
   if (req.session.user) {
     return res.redirect("/");
@@ -9,6 +22,10 @@ async function getLogin(req, res) {
   res.render("login", { title: "Prihlásenie", errors: [], formData: {} });
 }
 
+/**
+ * POST /login – spracuje prihlásenie.
+ * Pri úspechu nastaví `req.session.user` a presmeruje na `returnTo` (ak existuje).
+ */
 async function postLogin(req, res) {
   const { email, password } = req.body;
   const errors = [];
@@ -19,15 +36,18 @@ async function postLogin(req, res) {
 
   if (errors.length === 0) {
     try {
+      // Získame údaje potrebné na autentifikáciu (vrátane password_hash).
       const user = await userModel.findAuthUserByEmail(email);
 
       if (!user) {
         errors.push("Nesprávne prihlasovacie údaje.");
       } else {
+          // Heslo porovnávame cez bcrypt, nikdy nie plain text.
         const ok = await bcrypt.compare(password, user.password_hash);
         if (!ok) {
           errors.push("Nesprávne prihlasovacie údaje.");
         } else {
+            // Do session ukladáme len minimum (bez hash-u).
           req.session.user = {
             id: user.id,
             email: user.email,
@@ -49,12 +69,18 @@ async function postLogin(req, res) {
   res.render("login", { title: "Prihlásenie", errors, formData: { email } });
 }
 
+/**
+ * POST /logout – zruší session a presmeruje na login.
+ */
 async function postLogout(req, res) {
   req.session.destroy(() => {
     res.redirect("/login");
   });
 }
 
+/**
+ * GET /register – zobrazí registračný formulár.
+ */
 async function getRegister(req, res) {
   if (req.session.user) {
     return res.redirect("/");
@@ -67,6 +93,13 @@ async function getRegister(req, res) {
   });
 }
 
+/**
+ * POST /register – spracuje registráciu.
+ * - validuje input
+ * - skontroluje unikátnosť emailu
+ * - uloží používateľa s bcrypt hashom hesla
+ * - auto-login a redirect
+ */
 async function postRegister(req, res) {
   if (req.session.user) {
     return res.redirect("/");
@@ -93,6 +126,7 @@ async function postRegister(req, res) {
       const normalizedLast = (last_name || "").trim();
       const normalizedUsername = (username || "").trim();
 
+      // Password hashujeme – v DB sa nikdy neukladá plain heslo.
       const passwordHash = await bcrypt.hash(password, 10);
 
       const userId = await userModel.createUser({

@@ -1,8 +1,12 @@
 const userModel = require("../models/userModel");
 const { parsePositiveInt } = require("../utils/id");
 
+// Povolené roly v aplikácii (simple RBAC).
 const ALLOWED_ROLES = new Set(["admin", "trainer", "user"]);
 
+/**
+ * GET /uzivatelia – výpis používateľov (admin-only).
+ */
 async function list(req, res) {
   try {
     const users = await userModel.listAllUsers();
@@ -17,6 +21,10 @@ async function list(req, res) {
   }
 }
 
+/**
+ * POST /uzivatelia/:id/role – zmena roly (klasický POST + redirect).
+ * Obsahuje ochranu proti tomu, aby si admin sám odobral admin rolu (lockout).
+ */
 async function updateRole(req, res) {
   const targetUserId = parsePositiveInt(req.params.id);
   const newRole = (req.body?.role || "").toString().trim();
@@ -74,7 +82,10 @@ async function updateRole(req, res) {
   }
 }
 
-// AJAX variant – returns JSON instead of rendering a page
+/**
+ * POST /api/uzivatelia/:id/role – AJAX variant.
+ * Vracia JSON, ktorý použije front-end na aktualizáciu badge bez reloadu.
+ */
 async function updateRoleAjax(req, res) {
   const targetUserId = parsePositiveInt(req.params.id);
   const newRole = (req.body?.role || "").toString().trim();

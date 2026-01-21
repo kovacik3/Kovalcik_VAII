@@ -1,6 +1,16 @@
 const db = require("../db");
 
+/**
+ * Model pre tabuľku `reservations`.
+ *
+ * Obsahuje helpery pre:
+ * - listovanie s detailmi (JOIN na sessions/users)
+ * - kontrolu duplikátu rezervácie (session_id + user_id)
+ * - kontrolu kapacity tréningu (COUNT)
+ */
+
 async function listWithDetails({ isStaff, userId }) {
+  // Staff vidí všetky rezervácie, user iba svoje.
   let sql =
     `SELECT 
        r.id,
@@ -34,6 +44,7 @@ async function existsForUser(sessionId, userId) {
 }
 
 async function countForSession(sessionId) {
+  // Použité pri kontrole kapacity tréningu.
   const [rows] = await db.query(
     "SELECT COUNT(*) AS cnt FROM reservations WHERE session_id = ?",
     [sessionId]

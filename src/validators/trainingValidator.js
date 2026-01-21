@@ -1,3 +1,6 @@
+/**
+ * Validácia formulára tréningu (session).
+ */
 function validateTraining(data) {
   const errors = [];
   const title = (data?.title || "").toString();

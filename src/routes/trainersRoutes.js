@@ -5,6 +5,11 @@ const { uploadTrainerPhoto } = require("../middlewares/trainer-upload");
 
 const router = express.Router();
 
+/**
+ * Wrapper okolo multeru:
+ * - uloží prípadnú chybu uploadu do `req.uploadError`
+ * - nepadajú nám routy na nevhodnom type/veľkosti súboru
+ */
 function trainerPhotoUpload(req, res, next) {
 	uploadTrainerPhoto.single("photo")(req, res, (err) => {
 		if (!err) return next();
@@ -21,7 +26,10 @@ function trainerPhotoUpload(req, res, next) {
 	});
 }
 
+// Zoznam trénerov (verejné)
 router.get("/treneri", trainersController.list);
+
+// CRUD trénerov (iba admin)
 router.get("/treneri/new", requireRole("admin"), trainersController.newForm);
 router.post(
 	"/treneri/new",

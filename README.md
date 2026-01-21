@@ -165,3 +165,38 @@ Klientsky JS je v `public/js/ajax.js`:
 - Chyba „ER_NO_SUCH_TABLE“ pri seedovaní: najprv importuj `MySQL/schema.sql` do DB.
 - Upload fotky neprejde: typ musí byť `jpeg/png/webp` a veľkosť max 3MB.
 
+## Použitie AI (ChatGPT) pri vývoji
+
+Pri vývoji tohto projektu som využíval AI ako pomocný nástroj na generovanie kódu, refaktor, návrhy riešení a vysvetľovanie.
+
+### Šablóny a UI
+- AI mi vytvorila takmer všetky `.ejs` súbory.
+- Ja som si napísal iba `index.ejs` a `trenery.ejs`, ostatné som si nechal vygenerovať.
+- V `style` (CSS) je označené, ktoré časti robila AI.
+
+### Frontend / Backend logika
+- Pri AJAX častiach mi AI pomáhala s návrhom a implementáciou.
+- Väčšiu časť `form-validator` mi spravilo AI.
+
+### Refaktor a komentáre
+- Refactor a komentáre mi vo veľkej miere robila AI.
+
+### Databáza
+- AI mi pomáhala s väčšinou databázovej práce:
+  - `SELECT`, `INSERT`, `UPDATE`, `DELETE`
+  - `JOIN`-y a prepojenia tabuliek
+  - filtrovanie, triedenie, stránkovanie a podmienky (`WHERE`, `ORDER BY`, `LIMIT`)
+- Pri práci s databázou mi AI často pripravila aj logiku okolo dotazov v kóde.
+
+### Controller / Middleware / Utility
+- Väčšinu controllerov som písal ja, ale pri niektorých mi pomáhala AI.
+- Middleware mi vo veľkej miere generovala AI.
+- `datetime.js` mi spravila AI.
+
+### Seedovanie dát
+- Celý `seed` mi generovala AI.
+
+### Ako som AI používal
+- AI som využíval hlavne pri opakujúcich sa veciach (keď som už viackrát robil rovnaký typ kódu) alebo keď som potreboval zrýchliť prácu a spraviť kód čistejší.
+- Pri nových alebo odlišných veciach (iný jazyk, iný prístup, iný spôsob riešenia) som sa to snažil najprv skúsiť spraviť aj sám a AI som použil ako pomoc alebo kontrolu.
+

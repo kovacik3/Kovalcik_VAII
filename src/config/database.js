@@ -1,4 +1,10 @@
-// Central DB configuration (MySQL pool)
+/**
+ * Centrálna konfigurácia DB (MySQL pool).
+ *
+ * Používame mysql2 pool + promise API.
+ * Premenné sú v `.env`:
+ * - DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+ */
 
 require("dotenv").config();
 const mysql = require("mysql2");
@@ -19,4 +25,5 @@ const pool = mysql.createPool({
   queueLimit: 0,
 });
 
+// Exportujeme promise pool, aby modely mohli používať `await db.query(...)`.
 module.exports = pool.promise();

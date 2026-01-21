@@ -1,3 +1,7 @@
+/**
+ * Validácia vstupov pre registráciu.
+ * Vracia pole chýb (stringy) – ak je prázdne, input je OK.
+ */
 function validateRegistration(data) {
   const errors = [];
   const first_name = (data?.first_name || "").toString();

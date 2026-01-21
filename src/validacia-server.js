@@ -1,5 +1,5 @@
-// Backward-compatible wrapper.
-// New code should import from `src/validators`.
+// Spätná kompatibilita: starší kód používal slovenské názvy funkcií validácie.
+// Nový kód preferuje importy z `src/validators`.
 
 const validators = require("./validators");
 

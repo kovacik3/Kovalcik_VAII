@@ -1,7 +1,11 @@
-// Generated with AI: small helper for consistent server-side ID validation.
+/**
+ * Pomocná utilita pre bezpečné spracovanie ID (route param/query/body).
+ *
+ * Cieľ: mať jednotnú server-side validáciu typu "pozitívne celé číslo".
+ */
 
 function parsePositiveInt(value) {
-  // Accepts strings/numbers; returns integer > 0 or null.
+  // Akceptuje string/number; vráti celé číslo > 0 alebo null.
   const n = Number(value);
   if (!Number.isFinite(n)) return null;
   if (!Number.isInteger(n)) return null;

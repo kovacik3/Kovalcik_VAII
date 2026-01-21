@@ -1,3 +1,6 @@
+/**
+ * Validácia formulára trénera.
+ */
 function validateTrainer(data) {
   const errors = [];
   const name = (data?.name || "").toString();

@@ -1,8 +1,21 @@
+/**
+ * Express aplikácia (bootstrap).
+ *
+ * Tento súbor:
+ * - načíta konfiguráciu z `.env`
+ * - nastaví bezpečnostné middleware (Helmet)
+ * - nastaví sessions + CSRF ochranu
+ * - sprístupní premenné do EJS šablón cez `res.locals`
+ * - zaregistruje routy (MVC)
+ *
+ * Poznámka: server sa spúšťa v `src/server.js`.
+ */
+
 // ============================================
 // KNIŽNICE A ZÁKLADNÉ NASTAVENIA (MVC bootstrap)
 // ============================================
 
-// Čítame konfiguráciu z .env (heslá, DB, session secret)
+// Čítame konfiguráciu z .env (DB pripojenie, session secret, seed účty, ...)
 require("dotenv").config();
 
 const express = require("express");
@@ -27,7 +40,9 @@ const sessionConfig = require("./config/session");
 // Tu sa vytvorí Express aplikácia
 const app = express();
 
-// Bezpečnostné HTTP hlavičky (pozor: CSP je vypnuté, lebo používame CDN Bootstrap/FontAwesome)
+// Bezpečnostné HTTP hlavičky.
+// Pozor: CSP je vypnuté, lebo používame CDN Bootstrap/FontAwesome.
+// Ak by si chcel CSP zapnúť, je potrebné doplniť povolené zdroje (script-src/style-src/font-src...).
 app.disable("x-powered-by");
 app.use(
 	helmet({
@@ -45,13 +60,15 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 // Umožní čítať dáta z formulárov (req.body)
 app.use(express.urlencoded({ extended: true }));
 
-// Sessions: uloží info o prihlásenom užívateľovi na serveri,
-// prehliadač má len cookie s identifikátorom
+// Sessions:
+// - ukladáme info o prihlásenom používateľovi na serveri (v pamäti/process store)
+// - prehliadač má len cookie s identifikátorom session
+// - musia byť inicializované pred CSRF ochranou
 app.use(session(sessionConfig));
 
-// CSRF ochrana – musí byť po sessions a body parsingu
+// CSRF ochrana – musí byť po sessions a body parsingu (kvôli čítaniu tokenu z body)
 app.use(csrf());
-// CSRF token + user info do šablón
+// CSRF token + user info do šablón (res.locals)
 app.use(viewLocals);
 
 // Routes (MVC)
@@ -64,7 +81,7 @@ app.use(usersRoutes);
 app.use(profileRoutes);
 
 
-// CSRF error handler (user-friendly 403)
+// Centrálne spracovanie CSRF chyby (user-friendly 403)
 app.use(csrfErrorHandler);
 
 module.exports = app;

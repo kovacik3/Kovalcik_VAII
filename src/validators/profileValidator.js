@@ -1,3 +1,7 @@
+/**
+ * Validácia úpravy profilu.
+ * Heslo je voliteľné – validuje sa len vtedy, keď ho user vyplní.
+ */
 function validateProfileUpdate(data) {
   const errors = [];
 

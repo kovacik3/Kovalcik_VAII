@@ -1,9 +1,19 @@
 const db = require("../db");
 
+/**
+ * Model pre tabuľku `sessions` (tréningy).
+ *
+ * Tento model nerieši autorizáciu – to je na úrovni routes/middlewares.
+ * Funkcie tu vracajú buď:
+ * - pole riadkov (rows)
+ * - jeden riadok alebo null
+ */
+
 async function listAllWithTrainer(options = {}) {
   const trainerIdRaw = options?.trainerId;
   const trainerId = trainerIdRaw === null || trainerIdRaw === undefined ? null : Number(trainerIdRaw);
 
+  // Zoznam tréningov + meno trénera (LEFT JOIN, lebo trainer_id môže byť NULL)
   let sql =
     `SELECT 
        s.id,
@@ -30,6 +40,7 @@ async function listAllWithTrainer(options = {}) {
 }
 
 async function getUpcomingHome(limit = 3) {
+  // Home page potrebuje „ľahké“ dáta – názov + deň + čas v už formátovanej podobe.
   const [rows] = await db.query(
     `SELECT 
        s.id,
@@ -83,6 +94,8 @@ async function remove(id) {
 }
 
 async function cleanupExpiredSessions() {
+  // Automatické čistenie: zmažeme tréningy, ktoré už skončili.
+  // Rezervácie sa zmažú cez FOREIGN KEY ON DELETE CASCADE (v DB schéme).
   const [resSessions] = await db.query(
     `DELETE FROM sessions
      WHERE end_at IS NOT NULL AND end_at < NOW()`

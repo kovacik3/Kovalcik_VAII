@@ -1,7 +1,14 @@
-// Makes CSRF token and session user info available to EJS views via res.locals
+/**
+ * Middleware: sprístupní vybrané hodnoty do EJS šablón cez `res.locals`.
+ *
+ * V šablónach potom môžeme používať napr.:
+ * - csrfToken
+ * - currentUser
+ * - isAuthenticated / isAdmin / isTrainer
+ */
 
 function viewLocals(req, res, next) {
-  // csurf middleware must run before this.
+  // csurf middleware musí bežať pred týmto middleware (kvôli req.csrfToken()).
   res.locals.csrfToken = req.csrfToken();
   res.locals.currentUser = req.session.user || null;
   res.locals.isAuthenticated = !!req.session.user;

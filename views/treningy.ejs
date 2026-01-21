@@ -5,7 +5,7 @@
     <div class="col-12">
       <h1 class="mb-4">Tréningy (sessions)</h1>
       <% if (isAdmin || isTrainer) { %>
-        <a href="/treningy/new" class="btn btn-success">
+        <a href="/treningy/new" class="btn btn-primary">
           <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>
           Pridať tréning
         </a>
@@ -57,12 +57,12 @@
                   <td><%= s.trainer_name || "—" %></td>
                   <% if (isAdmin || isTrainer) { %>
                     <td>
-                      <a href="/treningy/<%= s.id %>/edit" class="btn btn-sm btn-warning" aria-label="Upraviť">
+                      <a href="/treningy/<%= s.id %>/edit" class="btn btn-sm btn-outline-secondary rounded-3" aria-label="Upraviť">
                         <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                       </a>
                        <form action="/treningy/<%= s.id %>/delete" method="POST" style="display:inline;">
                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Naozaj zmazať tento tréning?');">
+                         <button type="submit" class="btn btn-sm btn-outline-danger rounded-3" onclick="return confirm('Naozaj zmazať tento tréning?');">
                            <i class="fa-solid fa-trash" aria-hidden="true"></i>
                          </button>
                        </form>
@@ -70,7 +70,7 @@
                   <% } %>
                   <% if (!(isAdmin || isTrainer)) { %>
                     <td>
-                      <a href="/rezervacie/new?treningId=<%= s.id %>" class="btn btn-sm btn-info" aria-label="Rezervovať">
+                      <a href="/rezervacie/new?treningId=<%= s.id %>" class="btn btn-sm btn-outline-primary rounded-3" aria-label="Rezervovať">
                         <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
                       </a>
                     </td>

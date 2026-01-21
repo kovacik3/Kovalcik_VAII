@@ -17,7 +17,7 @@
         </div>
       <% } %>
 
-      <form action="/treneri/new" method="POST" class="js-validate" novalidate>
+      <form action="/treneri/new?_csrf=<%= encodeURIComponent(csrfToken) %>" method="POST" enctype="multipart/form-data" class="js-validate" novalidate>
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="mb-3">
           <label for="name" class="form-label">Meno trénera</label>
@@ -41,6 +41,18 @@
             value="<%= formData && formData.specialization ? formData.specialization : '' %>"
             required
           />
+        </div>
+
+        <div class="mb-3">
+          <label for="photo" class="form-label">Fotka trénera (voliteľné)</label>
+          <input
+            type="file"
+            class="form-control"
+            id="photo"
+            name="photo"
+            accept="image/png,image/jpeg,image/webp"
+          />
+          <div class="form-text">Max 3MB. Podporované: JPG/PNG/WebP.</div>
         </div>
 
         <div class="d-grid gap-2 d-sm-flex justify-content-sm-start">

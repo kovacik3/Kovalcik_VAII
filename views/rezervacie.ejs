@@ -60,7 +60,7 @@
                   <td>
                     <form action="/rezervacie/<%= r.id %>/delete" method="POST" style="display:inline;">
                       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Naozaj zmazať túto rezerváciu?');">
+                      <button type="submit" class="btn btn-sm btn-outline-danger rounded-3" onclick="return confirm('Naozaj zmazať túto rezerváciu?');">
                         <i class="fa-solid fa-trash" aria-hidden="true"></i>
                       </button>
                     </form>

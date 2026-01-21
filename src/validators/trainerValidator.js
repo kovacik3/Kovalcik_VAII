@@ -15,8 +15,8 @@ function validateTrainer(data) {
     errors.push("Špecializácia je povinná");
   } else if (specialization.trim().length < 3) {
     errors.push("Špecializácia musí mať aspoň 3 znaky");
-  } else if (specialization.trim().length > 100) {
-    errors.push("Špecializácia nesmie prekročiť 100 znakov");
+  } else if (specialization.trim().length > 150) {
+    errors.push("Špecializácia nesmie prekročiť 150 znakov");
   }
 
   return errors;

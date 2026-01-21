@@ -1,0 +1,21 @@
+
+/* Trainers (cards) */
+.trainer-card {
+	border-radius: 14px;
+	overflow: hidden;
+}
+
+.trainer-card-img {
+	height: 220px;
+	object-fit: cover;
+	background: #f1f3f5;
+}
+
+.trainer-avatar {
+	width: 84px;    
+	height: 84px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: #f1f3f5;
+}

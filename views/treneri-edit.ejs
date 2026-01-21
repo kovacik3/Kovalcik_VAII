@@ -17,7 +17,7 @@
         </div>
       <% } %>
 
-      <form action="/treneri/<%= trainer.id %>/edit" method="POST" class="js-validate" novalidate>
+      <form action="/treneri/<%= trainer.id %>/edit?_csrf=<%= encodeURIComponent(csrfToken) %>" method="POST" enctype="multipart/form-data" class="js-validate" novalidate>
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="mb-3">
           <label for="name" class="form-label">Meno trénera</label>
@@ -41,6 +41,33 @@
             value="<%= trainer.specialization %>"
             required
           />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Aktuálna fotka</label>
+          <div class="d-flex align-items-center gap-3">
+              <img
+                class="trainer-avatar"
+                src="<%= trainer.photo_path ? trainer.photo_path : '/images/user_icon.png' %>"
+                alt="Aktuálna fotka trénera"
+                onerror="this.onerror=null;this.src='/images/user_icon.png';"
+              />
+            <div class="text-muted" style="font-size: 0.95rem;">
+              Nahraj novú fotku, ak ju chceš zmeniť.
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="photo" class="form-label">Nová fotka (voliteľné)</label>
+          <input
+            type="file"
+            class="form-control"
+            id="photo"
+            name="photo"
+            accept="image/png,image/jpeg,image/webp"
+          />
+          <div class="form-text">Max 3MB. Podporované: JPG/PNG/WebP.</div>
         </div>
 
         <div class="d-grid gap-2 d-sm-flex justify-content-sm-start">
